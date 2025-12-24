@@ -1,0 +1,187 @@
+{
+  "nodes": [
+    {
+      "id": "AI",
+      "type": "TOPIC",
+      "label": "AI",
+      "properties": {
+        "description": "Artificial Intelligence"
+      }
+    },
+    {
+      "id": "Knowledge Graphs",
+      "type": "CONCEPT",
+      "label": "Knowledge Graphs",
+      "properties": {
+        "description": "Graph-based data representation"
+      }
+    },
+    {
+      "id": "This document",
+      "type": "entity",
+      "label": "This document",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "a clear, practical overview of how to find a job in Germany, especially for inte",
+      "type": "entity",
+      "label": "a clear, practical overview of how to find a job in Germany, especially for inte",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "Germany",
+      "type": "entity",
+      "label": "Germany",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "strong demand in the following fields:",
+      "type": "entity",
+      "label": "strong demand in the following fields:",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "If your profession",
+      "type": "entity",
+      "label": "If your profession",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "on the **shortage occupation list**, your chances are much higher",
+      "type": "entity",
+      "label": "on the **shortage occupation list**, your chances are much higher",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "* **English",
+      "type": "entity",
+      "label": "* **English",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "enough** for many IT and startup jobs",
+      "type": "entity",
+      "label": "enough** for many IT and startup jobs",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "* **German (B1–B2)**",
+      "type": "entity",
+      "label": "* **German (B1–B2)**",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "required for:",
+      "type": "entity",
+      "label": "required for:",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "* Punctuality",
+      "type": "entity",
+      "label": "* Punctuality",
+      "properties": {
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "critical",
+      "type": "entity",
+      "label": "critical",
+      "properties": {
+        "source": "job in germany "
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "0.lfxh2tgdxx",
+      "fromNodeId": "AI",
+      "toNodeId": "Knowledge Graphs",
+      "type": "RELATION",
+      "properties": {
+        "relation": "uses"
+      }
+    },
+    {
+      "id": "0.zm7gt67p6vj",
+      "fromNodeId": "This document",
+      "toNodeId": "a clear, practical overview of how to find a job in Germany, especially for inte",
+      "type": "relation",
+      "properties": {
+        "relation": "gives",
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.zhaec5aw2m",
+      "fromNodeId": "Germany",
+      "toNodeId": "strong demand in the following fields:",
+      "type": "relation",
+      "properties": {
+        "relation": "has",
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.h6ypuqz13i",
+      "fromNodeId": "If your profession",
+      "toNodeId": "on the **shortage occupation list**, your chances are much higher",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.3kqwinh8n1x",
+      "fromNodeId": "* **English",
+      "toNodeId": "enough** for many IT and startup jobs",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.grud2k1nbzf",
+      "fromNodeId": "* **German (B1–B2)**",
+      "toNodeId": "required for:",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.6jmhgwo0djr",
+      "fromNodeId": "* Punctuality",
+      "toNodeId": "critical",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "job in germany "
+      }
+    }
+  ]
+}
