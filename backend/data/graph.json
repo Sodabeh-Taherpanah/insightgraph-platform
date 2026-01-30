@@ -111,6 +111,214 @@
       "properties": {
         "source": "job in germany "
       }
+    },
+    {
+      "id": "document",
+      "type": "entity",
+      "label": "document",
+      "properties": {
+        "source": "Jan Resume"
+      }
+    },
+    {
+      "id": "PK\u0003\u0004\u0014\u0000\u0000\u0000\b\u0000\u0000\u0000!\u0000�\u0011H/�\u0000\u0000\u0000�\u0000\u0000\u0000\u000f\u0000\u0000\u0000word/styles",
+      "type": "entity",
+      "label": "PK\u0003\u0004\u0014\u0000\u0000\u0000\b\u0000\u0000\u0000!\u0000�\u0011H/�\u0000\u0000\u0000�\u0000\u0000\u0000\u000f\u0000\u0000\u0000word/styles",
+      "properties": {
+        "source": "Jan Resume"
+      }
+    },
+    {
+      "id": "document",
+      "type": "entity",
+      "label": "document",
+      "properties": {
+        "source": "ddd"
+      }
+    },
+    {
+      "id": "Sodabeh Taherpanah  Berlin, Germany   |   +49 176 677 85617   |   sudytaher@gmail",
+      "type": "entity",
+      "label": "Sodabeh Taherpanah  Berlin, Germany   |   +49 176 677 85617   |   sudytaher@gmail",
+      "properties": {
+        "source": "ddd"
+      }
+    },
+    {
+      "id": "My expertise",
+      "type": "entity",
+      "label": "My expertise",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "in   building robust, performant mobile apps with React Native  and TypeScript ,",
+      "type": "entity",
+      "label": "in   building robust, performant mobile apps with React Native  and TypeScript ,",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "For testing and reliability, I",
+      "type": "entity",
+      "label": "For testing and reliability, I",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "tools like   Jest, React Native Testing  Library, Detox , and integrate them int",
+      "type": "entity",
+      "label": "tools like   Jest, React Native Testing  Library, Detox , and integrate them int",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "Across all projects, my goal",
+      "type": "entity",
+      "label": "Across all projects, my goal",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "been consistent — to combine   clean architecture ,   strong UX ,  and   automat",
+      "type": "entity",
+      "label": "been consistent — to combine   clean architecture ,   strong UX ,  and   automat",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "I think that balance between  technical depth, design quality, and delivery spee",
+      "type": "entity",
+      "label": "I think that balance between  technical depth, design quality, and delivery spee",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "one of my strongest contributions",
+      "type": "entity",
+      "label": "one of my strongest contributions",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "Result:   Improved engagement and reliability in apps supporting therapy and mon",
+      "type": "entity",
+      "label": "Result:   Improved engagement and reliability in apps supporting therapy and mon",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "direct health impact",
+      "type": "entity",
+      "label": "direct health impact",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "My philosophy",
+      "type": "entity",
+      "label": "My philosophy",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "to de-risk early by planning for staged  rollouts, which gives us flexibility",
+      "type": "entity",
+      "label": "to de-risk early by planning for staged  rollouts, which gives us flexibility",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "A senior :",
+      "type": "entity",
+      "label": "A senior :",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "deep technical or domain expertise",
+      "type": "entity",
+      "label": "deep technical or domain expertise",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "NOTES  *",
+      "type": "entity",
+      "label": "NOTES  *",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "STAR method for behavioral questions",
+      "type": "entity",
+      "label": "STAR method for behavioral questions",
+      "properties": {
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "Page 2 of 2  In accordance with §38 VVG, please note that if an insured event oc",
+      "type": "entity",
+      "label": "Page 2 of 2  In accordance with §38 VVG, please note that if an insured event oc",
+      "properties": {
+        "source": "ins"
+      }
+    },
+    {
+      "id": "passed  and, when it occurs, you have failed to pay the premium, we are exempt f",
+      "type": "entity",
+      "label": "passed  and, when it occurs, you have failed to pay the premium, we are exempt f",
+      "properties": {
+        "source": "ins"
+      }
+    },
+    {
+      "id": "If the reason for non-payment",
+      "type": "entity",
+      "label": "If the reason for non-payment",
+      "properties": {
+        "source": "ins"
+      }
+    },
+    {
+      "id": "beyond your control, you can disregard the legal notice",
+      "type": "entity",
+      "label": "beyond your control, you can disregard the legal notice",
+      "properties": {
+        "source": "ins"
+      }
+    },
+    {
+      "id": "document",
+      "type": "entity",
+      "label": "document",
+      "properties": {
+        "source": "test 2"
+      }
+    },
+    {
+      "id": "insurence",
+      "type": "entity",
+      "label": "insurence",
+      "properties": {
+        "source": "test 2"
+      }
     }
   ],
   "edges": [
@@ -181,6 +389,136 @@
       "properties": {
         "relation": "is",
         "source": "job in germany "
+      }
+    },
+    {
+      "id": "0.q7m7g5b3thj",
+      "fromNodeId": "document",
+      "toNodeId": "PK\u0003\u0004\u0014\u0000\u0000\u0000\b\u0000\u0000\u0000!\u0000�\u0011H/�\u0000\u0000\u0000�\u0000\u0000\u0000\u000f\u0000\u0000\u0000word/styles",
+      "type": "relation",
+      "properties": {
+        "relation": "mentions",
+        "source": "Jan Resume"
+      }
+    },
+    {
+      "id": "0.ry7nivl0wtl",
+      "fromNodeId": "document",
+      "toNodeId": "Sodabeh Taherpanah  Berlin, Germany   |   +49 176 677 85617   |   sudytaher@gmail",
+      "type": "relation",
+      "properties": {
+        "relation": "mentions",
+        "source": "ddd"
+      }
+    },
+    {
+      "id": "0.b1s30jkvub5",
+      "fromNodeId": "My expertise",
+      "toNodeId": "in   building robust, performant mobile apps with React Native  and TypeScript ,",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.ve8j9q2p2fr",
+      "fromNodeId": "For testing and reliability, I",
+      "toNodeId": "tools like   Jest, React Native Testing  Library, Detox , and integrate them int",
+      "type": "relation",
+      "properties": {
+        "relation": "use",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.ljvnbx9nxj",
+      "fromNodeId": "Across all projects, my goal",
+      "toNodeId": "been consistent — to combine   clean architecture ,   strong UX ,  and   automat",
+      "type": "relation",
+      "properties": {
+        "relation": "has",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.4ktueybysh9",
+      "fromNodeId": "I think that balance between  technical depth, design quality, and delivery spee",
+      "toNodeId": "one of my strongest contributions",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.daluz2wxrv",
+      "fromNodeId": "Result:   Improved engagement and reliability in apps supporting therapy and mon",
+      "toNodeId": "direct health impact",
+      "type": "relation",
+      "properties": {
+        "relation": "has",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.wjfznicbcb",
+      "fromNodeId": "My philosophy",
+      "toNodeId": "to de-risk early by planning for staged  rollouts, which gives us flexibility",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.46qno46wagn",
+      "fromNodeId": "A senior :",
+      "toNodeId": "deep technical or domain expertise",
+      "type": "relation",
+      "properties": {
+        "relation": "Has",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.tf5qfqoizfa",
+      "fromNodeId": "NOTES  *",
+      "toNodeId": "STAR method for behavioral questions",
+      "type": "relation",
+      "properties": {
+        "relation": "Use",
+        "source": "mobil file"
+      }
+    },
+    {
+      "id": "0.25vxvuacv14",
+      "fromNodeId": "Page 2 of 2  In accordance with §38 VVG, please note that if an insured event oc",
+      "toNodeId": "passed  and, when it occurs, you have failed to pay the premium, we are exempt f",
+      "type": "relation",
+      "properties": {
+        "relation": "has",
+        "source": "ins"
+      }
+    },
+    {
+      "id": "0.oo7eicm7jnb",
+      "fromNodeId": "If the reason for non-payment",
+      "toNodeId": "beyond your control, you can disregard the legal notice",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "ins"
+      }
+    },
+    {
+      "id": "0.3wxs5rthavg",
+      "fromNodeId": "document",
+      "toNodeId": "insurence",
+      "type": "relation",
+      "properties": {
+        "relation": "mentions",
+        "source": "test 2"
       }
     }
   ]

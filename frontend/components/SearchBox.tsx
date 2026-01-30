@@ -9,7 +9,7 @@ export default function SearchBox() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch(
-      `http://localhost:4000/search?q=${encodeURIComponent(query)}`
+      `http://localhost:4000/search?q=${encodeURIComponent(query)}`,
     );
     const data = await res.json();
     setResults(data.results || []);
@@ -61,8 +61,8 @@ export default function SearchBox() {
               <button
                 onClick={() =>
                   window.open(
-                    `http://localhost:4000/documents/${r.id}`,
-                    '_blank'
+                    `http://localhost:3000/documents/${r.id}`,
+                    '_blank',
                   )
                 }
                 className='ml-4 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600'

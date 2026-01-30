@@ -1,5 +1,6 @@
 import { indexDocument } from './searchService';
 import { extractTripletsFromText } from './aiService';
+import { normalizeText } from '../utils/fileParser';
 import { graph } from './graphService';
 import logger from '../utils/logger';
 
@@ -11,7 +12,7 @@ export interface IngestResult {
 
 export async function ingestDocument(
   title: string,
-  text: string
+  text: string,
 ): Promise<IngestResult> {
   logger.info('Starting document ingestion', {
     title,
@@ -20,10 +21,13 @@ export async function ingestDocument(
 
   try {
     // 1️⃣ Index document in Elasticsearch
+    // Normalize text before indexing so stored document is readable
+    const cleaned = normalizeText(text);
+
     const doc = {
       id: title,
       title,
-      text,
+      text: cleaned,
       createdAt: new Date().toISOString(),
     };
     await indexDocument(doc);

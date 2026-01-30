@@ -62,12 +62,60 @@ export async function searchDocuments(query: string, size = 10) {
       },
     },
   });
-
+  // Return highlights where available to support lightweight RAG
   const hits = resp.hits.hits.map((h) => ({
     id: h._id,
     score: h._score,
     source: h._source as DocumentSource,
+    highlights: (h.highlight && (h.highlight.text || h.highlight.title)) || [],
   }));
 
   return hits;
+}
+
+/**
+ * Retrieve a trimmed context for a query using highlights from ES.
+ * Returns concatenated top fragments from top documents.
+ */
+export async function retrieveContext(
+  query: string,
+  topDocs = 5,
+  fragmentsPerDoc = 3,
+) {
+  await ensureIndex();
+  const resp = await client.search({
+    index: INDEX,
+    size: topDocs,
+    query: {
+      multi_match: {
+        query,
+        fields: ['title^2', 'text'],
+      },
+    },
+    highlight: {
+      pre_tags: [''],
+      post_tags: [''],
+      fields: {
+        text: { number_of_fragments: fragmentsPerDoc, fragment_size: 200 },
+        title: { number_of_fragments: 1, fragment_size: 120 },
+      },
+    },
+  });
+
+  const fragments: string[] = [];
+  for (const h of resp.hits.hits) {
+    if (h.highlight) {
+      const txt = h.highlight.text || [];
+      for (const frag of txt.slice(0, fragmentsPerDoc)) {
+        fragments.push(frag);
+      }
+    } else if (h._source && (h._source as any).text) {
+      // fallback: take first 200 chars
+      fragments.push(((h._source as any).text as string).slice(0, 200));
+    }
+  }
+
+  // join with separators and limit overall length
+  const joined = fragments.join('\n\n').slice(0, 16000);
+  return joined;
 }

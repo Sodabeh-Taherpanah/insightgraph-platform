@@ -12,8 +12,12 @@
     "better-sqlite3": "^9.6.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "mammoth": "^1.11.0",
     "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.530",
     "winston": "^3.19.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.2.1"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { ingestDocument } from '../services/ingestService';
+import { parseUploadedFile } from '../utils/fileParser';
 import logger from '../utils/logger';
 export const router = express.Router();
 /**
@@ -34,20 +35,46 @@ router.post('/', upload.single('file'), async (req, res) => {
     let title = String(req.body.title || 'doc-' + Date.now());
     let text = String(req.body.text || '');
 
-    // If file uploaded, read contents and validate
+    // If file uploaded, parse it based on file type
     if (req.file) {
-      text = req.file.buffer.toString('utf8');
+      try {
+        const parsed = await parseUploadedFile(
+          req.file.buffer,
+          req.file.originalname,
+        );
+        text = parsed.text;
+        // Use parsed filename as title if not provided
+        if (!req.body.title) {
+          title = parsed.title;
+        }
+        logger.info('File parsed', {
+          filename: req.file.originalname,
+          fileType: parsed.fileType,
+          textLength: text.length,
+        });
+      } catch (parseErr) {
+        logger.warn('File parsing failed', {
+          filename: req.file.originalname,
+          error:
+            parseErr instanceof Error ? parseErr.message : String(parseErr),
+        });
+        return res.status(400).json({
+          error:
+            parseErr instanceof Error
+              ? parseErr.message
+              : 'Failed to parse file',
+        });
+      }
+
       const fileValidation = fileUploadSchema.safeParse(req.body);
       if (!fileValidation.success) {
         logger.warn('File upload validation failed', {
           errors: fileValidation.error.issues,
         });
-        return res
-          .status(400)
-          .json({
-            error: 'Invalid file upload data',
-            details: fileValidation.error.issues,
-          });
+        return res.status(400).json({
+          error: 'Invalid file upload data',
+          details: fileValidation.error.issues,
+        });
       }
     } else {
       // Validate text upload
@@ -56,12 +83,10 @@ router.post('/', upload.single('file'), async (req, res) => {
         logger.warn('Text upload validation failed', {
           errors: validation.error.issues,
         });
-        return res
-          .status(400)
-          .json({
-            error: 'Invalid upload data',
-            details: validation.error.issues,
-          });
+        return res.status(400).json({
+          error: 'Invalid upload data',
+          details: validation.error.issues,
+        });
       }
     }
 
