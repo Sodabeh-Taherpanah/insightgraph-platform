@@ -1,5 +1,5 @@
 """
-FastAPI LLM Service - Week 6
+FastAPI LLM Service
 Handles all LLM operations for InsightGraph
 """
 import json

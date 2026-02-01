@@ -96,7 +96,7 @@ function heuristicExtract(text: string): Triplet[] {
 
 /**
  * Answers a question using provided context via LLM.
- * Week 6: Now calls FastAPI sidecar service instead of OpenAI directly.
+ *  Now calls FastAPI sidecar service instead of OpenAI directly.
  * Fallback -> simple keyword matching if FastAPI service is not available.
  */
 export async function answerQuestionWithContext(
@@ -157,7 +157,7 @@ function fallbackAnswer(context: string, question: string): string {
 
 /**
  * Streams answer tokens one by one via callback.
- * Week 6: Now calls FastAPI sidecar service for streaming.
+ * Now calls FastAPI sidecar service for streaming.
  * Fallback -> stream fallback answer slowly if FastAPI service is not available.
  */
 export async function answerQuestionStreaming(

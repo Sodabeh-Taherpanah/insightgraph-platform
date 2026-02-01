@@ -403,7 +403,7 @@ GET /documents/:id/summary/stream
 
 ## Testing
 
-### Test FastAPI Service Directly - Week 6
+### Test FastAPI Service Directly
 
 ```bash
 # Health check
