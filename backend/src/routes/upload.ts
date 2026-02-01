@@ -17,7 +17,8 @@ const upload = multer();
 // Zod schema for upload validation
 const uploadSchema = z.object({
   title: z.string().min(1).max(100).optional(),
-  text: z.string().min(1).max(10000),
+  text: z.string().min(1).max(10000).optional(),
+  content: z.string().min(1).max(10000).optional(),
 });
 
 // File upload schema (if file is provided)
@@ -33,7 +34,8 @@ router.post('/', upload.single('file'), async (req, res) => {
 
   try {
     let title = String(req.body.title || 'doc-' + Date.now());
-    let text = String(req.body.text || '');
+    // Accept both 'text' and 'content' fields for flexibility
+    let text = String(req.body.text || req.body.content || '');
 
     // If file uploaded, parse it based on file type
     if (req.file) {
@@ -88,11 +90,14 @@ router.post('/', upload.single('file'), async (req, res) => {
           details: validation.error.issues,
         });
       }
-    }
 
-    if (!text.trim()) {
-      logger.warn('No text provided in upload');
-      return res.status(400).json({ error: 'no text or file uploaded' });
+      // Ensure at least text or content is provided
+      if (!text.trim()) {
+        logger.warn('No text or content provided in upload');
+        return res.status(400).json({
+          error: 'Either "text" or "content" field is required',
+        });
+      }
     }
 
     // Use ingest service

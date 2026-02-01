@@ -25,7 +25,7 @@ app.use(
     err: any,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    next: express.NextFunction,
   ) => {
     let error = err;
 
@@ -47,7 +47,7 @@ app.use(
       error: error.message,
       ...(error.details && { details: error.details }),
     });
-  }
+  },
 );
 
 // 404 handler
@@ -60,9 +60,9 @@ app.use((req, res) => {
 (async () => {
   try {
     await initializeGraph();
-    app.listen(4000, () => {
-      logger.info('Backend server started', { port: 4000 });
-      console.log('🚀 Backend running on http://localhost:4000');
+    app.listen(3001, () => {
+      logger.info('Backend server started', { port: 3001 });
+      console.log('🚀 Backend running on http://localhost:3001');
     });
   } catch (err) {
     logger.error('Failed to initialize graph', { error: err });

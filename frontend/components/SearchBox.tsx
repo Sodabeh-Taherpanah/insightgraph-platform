@@ -9,7 +9,7 @@ export default function SearchBox() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch(
-      `http://localhost:4000/search?q=${encodeURIComponent(query)}`,
+      `http://localhost:3001/search?q=${encodeURIComponent(query)}`,
     );
     const data = await res.json();
     setResults(data.results || []);

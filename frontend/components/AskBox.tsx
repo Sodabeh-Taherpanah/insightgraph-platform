@@ -43,7 +43,7 @@ export default function AskBox() {
   };
 
   const handleStandardAsk = async () => {
-    const res = await fetch('http://localhost:4000/ask', {
+    const res = await fetch('http://localhost:3001/ask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export default function AskBox() {
   };
 
   const handleStreamingAsk = async () => {
-    const res = await fetch('http://localhost:4000/ask/stream', {
+    const res = await fetch('http://localhost:3001/ask/stream', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,26 +87,32 @@ export default function AskBox() {
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
 
-      // Keep the last incomplete line in the buffer
-      buffer = lines.pop() || '';
+      // Split by double newlines (SSE format uses \n\n to separate events)
+      const events = buffer.split('\n\n');
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') {
-            break;
-          }
+      // Keep the last incomplete event in the buffer
+      buffer = events[events.length - 1];
 
+      // Process all complete events
+      for (let i = 0; i < events.length - 1; i++) {
+        const event = events[i].trim();
+        if (event) {
           try {
-            const parsed = JSON.parse(data);
-            if (parsed.type === 'answer') {
-              setAnswer((prev) => prev + parsed.content);
-            } else if (parsed.type === 'sources') {
-              setSources(parsed.sources);
-            } else if (parsed.type === 'error') {
-              throw new Error(parsed.error);
+            // SSE format: "data: {...JSON...}"
+            if (event.startsWith('data: ')) {
+              const jsonStr = event.substring(6); // Remove "data: " prefix
+              if (jsonStr === '[DONE]') {
+                break;
+              }
+              const data = JSON.parse(jsonStr);
+              if (data.type === 'answer') {
+                setAnswer((prev) => prev + data.content);
+              } else if (data.type === 'sources') {
+                setSources(data.sources);
+              } else if (data.type === 'error') {
+                throw new Error(data.error);
+              }
             }
           } catch (e) {
             // Ignore parse errors

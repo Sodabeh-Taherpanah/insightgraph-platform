@@ -19,7 +19,7 @@ export default function UploadForm() {
     if (file) formData.append('file', file);
     else formData.append('text', text);
 
-    const res = await fetch('http://localhost:4000/upload', {
+    const res = await fetch('http://localhost:3001/upload', {
       method: 'POST',
       body: formData,
     });

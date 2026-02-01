@@ -19,7 +19,7 @@ export default function GraphView() {
   const loadGraph = () => {
     setLoading(true);
     setError(null);
-    fetch('http://localhost:4000/graph')
+    fetch('http://localhost:3001/graph')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch graph data');
         return res.json();

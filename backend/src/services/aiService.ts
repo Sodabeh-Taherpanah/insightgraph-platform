@@ -96,50 +96,39 @@ function heuristicExtract(text: string): Triplet[] {
 
 /**
  * Answers a question using provided context via LLM.
- * Fallback -> simple keyword matching if API key is not provided.
+ * Week 6: Now calls FastAPI sidecar service instead of OpenAI directly.
+ * Fallback -> simple keyword matching if FastAPI service is not available.
  */
 export async function answerQuestionWithContext(
   context: string,
   question: string,
 ): Promise<string> {
-  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  const LLM_SERVICE_URL =
+    process.env.LLM_SERVICE_URL || 'http://127.0.0.1:8000';
   const MAX_TOKENS = 500;
 
-  if (OPENAI_KEY) {
-    try {
-      const systemPrompt = `You are a helpful assistant that answers questions based on the provided context. If the context doesn't contain enough information to answer the question, say so clearly. Keep your answer concise and relevant.`;
+  try {
+    const resp = await axios.post(
+      `${LLM_SERVICE_URL}/llm/ask`,
+      {
+        question,
+        context,
+        max_tokens: MAX_TOKENS,
+        temperature: 0.3,
+      },
+      {
+        timeout: 30000, // 30 second timeout
+      },
+    );
 
-      const userPrompt = `Context:\n${context}\n\nQuestion: ${question}`;
-
-      const resp = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          max_tokens: MAX_TOKENS,
-          temperature: 0.3,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${OPENAI_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      const content = resp.data?.choices?.[0]?.message?.content;
-      return content || 'I could not generate an answer.';
-    } catch (err) {
-      console.warn('LLM answer failed, falling back to keyword matching', err);
-      return fallbackAnswer(context, question);
-    }
+    return resp.data?.answer || 'I could not generate an answer.';
+  } catch (err) {
+    console.warn(
+      'FastAPI LLM service failed, falling back to keyword matching',
+      err,
+    );
+    return fallbackAnswer(context, question);
   }
-
-  // No API key -> fallback
-  return fallbackAnswer(context, question);
 }
 
 /**
@@ -168,126 +157,99 @@ function fallbackAnswer(context: string, question: string): string {
 
 /**
  * Streams answer tokens one by one via callback.
- * Suitable for SSE or WebSocket streaming.
- * Fallback -> stream fallback answer slowly if API key is not provided.
+ * Week 6: Now calls FastAPI sidecar service for streaming.
+ * Fallback -> stream fallback answer slowly if FastAPI service is not available.
  */
 export async function answerQuestionStreaming(
   context: string,
   question: string,
   onToken: (token: string) => void,
 ): Promise<void> {
-  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  const LLM_SERVICE_URL =
+    process.env.LLM_SERVICE_URL || 'http://127.0.0.1:8000';
   const MAX_TOKENS = 500;
 
-  if (OPENAI_KEY) {
-    try {
-      const systemPrompt = `You are a helpful assistant that answers questions based on the provided context. If the context doesn't contain enough information to answer the question, say so clearly. Keep your answer concise and relevant.`;
+  try {
+    const resp = await axios.post(
+      `${LLM_SERVICE_URL}/llm/stream`,
+      {
+        question,
+        context,
+        max_tokens: MAX_TOKENS,
+        temperature: 0.3,
+      },
+      {
+        responseType: 'stream',
+        timeout: 30000,
+      },
+    );
 
-      const userPrompt = `Context:\n${context}\n\nQuestion: ${question}`;
+    // Process streaming response from FastAPI
+    return new Promise((resolve, reject) => {
+      let buffer = '';
+      let tokenCount = 0;
 
-      const resp = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          max_tokens: MAX_TOKENS,
-          temperature: 0.3,
-          stream: true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${OPENAI_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          responseType: 'stream',
-        },
-      );
+      resp.data.on('data', (chunk: Buffer) => {
+        buffer += chunk.toString();
 
-      // Process streaming response
-      return new Promise((resolve, reject) => {
-        resp.data.on('data', (chunk: Buffer) => {
-          const lines = chunk.toString().split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') {
-                resolve();
-                return;
-              }
-              try {
-                const json = JSON.parse(data);
-                const token = json.choices?.[0]?.delta?.content;
-                if (token) {
-                  onToken(token);
-                }
-              } catch (e) {
-                // Ignore parse errors in stream
-              }
-            }
-          }
-        });
+        // Split by double newlines (SSE separator)
+        const events = buffer.split('\n\n');
 
-        resp.data.on('error', (err: Error) => {
-          console.warn(
-            'Streaming failed, falling back to keyword matching',
-            err,
-          );
-          // Stream fallback answer with delay for visual effect
-          const fallback = fallbackAnswer(context, question);
-          const chars = fallback.split('');
-          let index = 0;
-          const interval = setInterval(() => {
-            if (index < chars.length) {
-              onToken(chars[index]);
-              index++;
-            } else {
-              clearInterval(interval);
+        // Keep the last incomplete event in buffer
+        buffer = events[events.length - 1];
+
+        // Process all complete events
+        for (let i = 0; i < events.length - 1; i++) {
+          const event = events[i].trim();
+          if (event && event.startsWith('data: ')) {
+            const data = event.slice(6); // Don't trim - preserves spaces in tokens!
+            console.log('FastAPI event:', { data: data.slice(0, 50) });
+            if (data === '[DONE]') {
+              console.log('FastAPI streaming done, total tokens:', tokenCount);
               resolve();
+              return;
             }
-          }, 20); // 20ms between tokens for smooth streaming
-        });
-      });
-    } catch (err) {
-      console.warn(
-        'LLM streaming failed, falling back to keyword matching',
-        err,
-      );
-      // Stream fallback answer with delay for visual effect
-      return new Promise((resolve) => {
-        const fallback = fallbackAnswer(context, question);
-        const chars = fallback.split('');
-        let index = 0;
-        const interval = setInterval(() => {
-          if (index < chars.length) {
-            onToken(chars[index]);
-            index++;
-          } else {
-            clearInterval(interval);
-            resolve();
+            // FastAPI streams raw tokens, not JSON chunks
+            if (data && !data.startsWith('{')) {
+              tokenCount++;
+              onToken(data);
+            } else {
+              console.log('Skipping event (JSON or empty):', data.slice(0, 30));
+            }
           }
-        }, 20); // 20ms between tokens for smooth streaming
+        }
       });
-    }
-  }
 
-  // No API key -> stream fallback answer slowly
-  return new Promise((resolve) => {
-    const fallback = fallbackAnswer(context, question);
-    const chars = fallback.split('');
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < chars.length) {
-        onToken(chars[index]);
-        index++;
-      } else {
-        clearInterval(interval);
+      resp.data.on('error', (err: Error) => {
+        console.error('FastAPI streaming error:', err);
+        reject(err);
+      });
+
+      resp.data.on('end', () => {
         resolve();
-      }
-    }, 20); // 20ms between tokens for smooth streaming
-  });
+      });
+    });
+  } catch (err) {
+    console.warn(
+      'FastAPI streaming failed, falling back to keyword matching',
+      err,
+    );
+    // Stream fallback answer with delay for visual effect
+    return new Promise((resolve) => {
+      const fallback = fallbackAnswer(context, question);
+      const chars = fallback.split('');
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < chars.length) {
+          onToken(chars[index]);
+          index++;
+        } else {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 20); // 20ms between tokens for smooth streaming
+    });
+  }
 }
 
 /**

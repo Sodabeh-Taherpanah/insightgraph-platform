@@ -1,0 +1,93 @@
+# Week 6 - FastAPI Sidecar Architecture
+
+version: '3.8'
+
+services:
+  # Elasticsearch (existing)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ports:
+      - '9200:9200'
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - insightgraph
+
+  # FastAPI LLM Service (NEW - Week 6)
+  llm-service:
+    build:
+      context: ./llm-service
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1
+      - PORT=8000
+    depends_on:
+      - elasticsearch
+      - ollama
+    networks:
+      - insightgraph
+    restart: unless-stopped
+
+  # Ollama (local LLM runtime)
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - insightgraph
+    restart: unless-stopped
+
+  # Node.js Backend (updated to use LLM service)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - LLM_SERVICE_URL=http://llm-service:8000
+      - PORT=3001
+    depends_on:
+      - elasticsearch
+      - llm-service
+    networks:
+      - insightgraph
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  # Frontend (existing)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    networks:
+      - insightgraph
+    restart: unless-stopped
+
+volumes:
+  es_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  insightgraph:
+    driver: bridge

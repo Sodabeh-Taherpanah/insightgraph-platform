@@ -1,5 +1,5 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function uploadText(title: string, text: string) {
   const res = await fetch(`${API_BASE}/upload`, {

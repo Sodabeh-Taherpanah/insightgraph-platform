@@ -319,6 +319,134 @@
       "properties": {
         "source": "test 2"
       }
+    },
+    {
+      "id": "Machine learning",
+      "type": "entity",
+      "label": "Machine learning",
+      "properties": {
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "subset of artificial intelligence that focuses on enabling computers to learn fr",
+      "type": "entity",
+      "label": "subset of artificial intelligence that focuses on enabling computers to learn fr",
+      "properties": {
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "Supervised learning involves training models on labeled data, where the target o",
+      "type": "entity",
+      "label": "Supervised learning involves training models on labeled data, where the target o",
+      "properties": {
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "known",
+      "type": "entity",
+      "label": "known",
+      "properties": {
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "Microservices architecture",
+      "type": "entity",
+      "label": "Microservices architecture",
+      "properties": {
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "design pattern that structures an application as a collection of loosely coupled",
+      "type": "entity",
+      "label": "design pattern that structures an application as a collection of loosely coupled",
+      "properties": {
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "Each service",
+      "type": "entity",
+      "label": "Each service",
+      "properties": {
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "self-contained and implements a single business capability",
+      "type": "entity",
+      "label": "self-contained and implements a single business capability",
+      "properties": {
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "Microservices architecture",
+      "type": "entity",
+      "label": "Microservices architecture",
+      "properties": {
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "design pattern",
+      "type": "entity",
+      "label": "design pattern",
+      "properties": {
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "Each service",
+      "type": "entity",
+      "label": "Each service",
+      "properties": {
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "self-contained",
+      "type": "entity",
+      "label": "self-contained",
+      "properties": {
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "document",
+      "type": "entity",
+      "label": "document",
+      "properties": {
+        "source": "AI Systems"
+      }
+    },
+    {
+      "id": "Artificial intelligence systems are becoming increasingly sophisticated and integrated into daily life",
+      "type": "entity",
+      "label": "Artificial intelligence systems are becoming increasingly sophisticated and integrated into daily life",
+      "properties": {
+        "source": "AI Systems"
+      }
+    },
+    {
+      "id": "AI",
+      "type": "entity",
+      "label": "AI",
+      "properties": {
+        "source": "AI"
+      }
+    },
+    {
+      "id": "intelligence demonstrated by machines",
+      "type": "entity",
+      "label": "intelligence demonstrated by machines",
+      "properties": {
+        "source": "AI"
+      }
     }
   ],
   "edges": [
@@ -519,6 +647,86 @@
       "properties": {
         "relation": "mentions",
         "source": "test 2"
+      }
+    },
+    {
+      "id": "0.hsp8rqaj5t",
+      "fromNodeId": "Machine learning",
+      "toNodeId": "subset of artificial intelligence that focuses on enabling computers to learn fr",
+      "type": "relation",
+      "properties": {
+        "relation": "is a",
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "0.k96tprru3s",
+      "fromNodeId": "Supervised learning involves training models on labeled data, where the target o",
+      "toNodeId": "known",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "Test Document"
+      }
+    },
+    {
+      "id": "0.jeinlmn277i",
+      "fromNodeId": "Microservices architecture",
+      "toNodeId": "design pattern that structures an application as a collection of loosely coupled",
+      "type": "relation",
+      "properties": {
+        "relation": "is a",
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "0.wlubm15e8e",
+      "fromNodeId": "Each service",
+      "toNodeId": "self-contained and implements a single business capability",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "Microservices Architecture"
+      }
+    },
+    {
+      "id": "0.t8hb612vu4k",
+      "fromNodeId": "Microservices architecture",
+      "toNodeId": "design pattern",
+      "type": "relation",
+      "properties": {
+        "relation": "is a",
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "0.o50xdrm9b6",
+      "fromNodeId": "Each service",
+      "toNodeId": "self-contained",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "Microservices"
+      }
+    },
+    {
+      "id": "0.e3coet8hvs6",
+      "fromNodeId": "document",
+      "toNodeId": "Artificial intelligence systems are becoming increasingly sophisticated and integrated into daily life",
+      "type": "relation",
+      "properties": {
+        "relation": "mentions",
+        "source": "AI Systems"
+      }
+    },
+    {
+      "id": "0.i59uyxmxr6",
+      "fromNodeId": "AI",
+      "toNodeId": "intelligence demonstrated by machines",
+      "type": "relation",
+      "properties": {
+        "relation": "is",
+        "source": "AI"
       }
     }
   ]

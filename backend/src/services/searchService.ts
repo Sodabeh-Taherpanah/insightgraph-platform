@@ -9,12 +9,19 @@ interface DocumentSource {
   title: string;
   text: string;
   createdAt: string;
+  // Chunk metadata (optional - for chunked documents)
+  sourceId?: string; // Original document ID
+  sourceTitle?: string; // Original document title
+  chunkIndex?: number;
+  startPosition?: number;
+  endPosition?: number;
+  totalChunks?: number;
 }
 
 export type { DocumentSource };
 
 /**
- * Ensure index exists (simple mapping for text)
+ * Ensure index exists with enhanced mapping for chunked documents
  */
 export async function ensureIndex() {
   const exists = await client.indices.exists({ index: INDEX });
@@ -27,6 +34,13 @@ export async function ensureIndex() {
             title: { type: 'text' },
             text: { type: 'text' },
             createdAt: { type: 'date' },
+            // Chunk metadata
+            sourceId: { type: 'keyword' },
+            sourceTitle: { type: 'text' },
+            chunkIndex: { type: 'integer' },
+            startPosition: { type: 'integer' },
+            endPosition: { type: 'integer' },
+            totalChunks: { type: 'integer' },
           },
         },
       } as any,
@@ -39,6 +53,12 @@ export async function indexDocument(doc: {
   title: string;
   text: string;
   createdAt: string;
+  sourceId?: string;
+  sourceTitle?: string;
+  chunkIndex?: number;
+  startPosition?: number;
+  endPosition?: number;
+  totalChunks?: number;
 }) {
   await ensureIndex();
   await client.index({
