@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Week 6 - Full Stack Startup Script
+# Full Stack Startup Script
 # Starts Node.js backend + FastAPI LLM service
 
 set -e
 
-echo "🚀 Starting InsightGraph Week 6 - Full Stack with FastAPI Sidecar"
+echo "
+Starting InsightGraph Full Stack with FastAPI Sidecar"
 echo ""
 
 # Colors for output

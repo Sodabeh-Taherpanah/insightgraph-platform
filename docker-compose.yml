@@ -1,5 +1,3 @@
-# Week 6 - FastAPI Sidecar Architecture
-
 version: '3.8'
 
 services:
@@ -17,7 +15,7 @@ services:
     networks:
       - insightgraph
 
-  # FastAPI LLM Service (NEW - Week 6)
+  # FastAPI LLM Service
   llm-service:
     build:
       context: ./llm-service
