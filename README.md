@@ -393,28 +393,6 @@ fullstack_insightgraph_AI/
 
 ---
 
-## 🎯 Resume Bullet Point
-
-```
-Built a production-ready RAG system with streaming LLM responses using Node.js,
-Python FastAPI, and Elasticsearch. Implemented document chunking for precise
-retrieval, real-time token streaming via SSE, and polyglot microservices
-architecture. Integrated Ollama for cost-free LLM inference with proper context
-management and source attribution.
-```
-
-**Alternative (Backend-Focused):**
-
-```
-Designed and implemented a backend-first AI document search system with
-TypeScript/Node.js orchestration layer and Python FastAPI for LLM operations.
-Built RAG pipeline with Elasticsearch-based chunked retrieval, Server-Sent Events
-streaming, and knowledge graph extraction. Demonstrated clean architecture
-principles and pragmatic technology choices.
-```
-
----
-
 GET /documents/:id/summary/stream
 
 ````
