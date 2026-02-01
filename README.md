@@ -8,7 +8,7 @@ InsightGraph demonstrates how to build a **scalable AI-powered document search s
 
 ---
 
-## 🎯 Project Goal
+## Project Goal
 
 Enable users to **ask natural language questions** about their documents and receive **AI-generated answers** grounded in actual source data, with:
 
@@ -19,7 +19,7 @@ Enable users to **ask natural language questions** about their documents and rec
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TB
@@ -170,7 +170,7 @@ data: [DONE]
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **Prerequisites**
 
@@ -226,7 +226,7 @@ npm run dev  # Runs on http://localhost:3000
 
 ---
 
-## 📝 Example Usage
+## Example Usage
 
 ### **1. Upload a Document**
 
@@ -258,7 +258,7 @@ Open `http://localhost:3000` and:
 
 ---
 
-## 🎓 Example Prompts to Try
+## Example Prompts to Try
 
 After uploading documents about software architecture:
 
@@ -282,7 +282,7 @@ After uploading documents about software architecture:
 
 ---
 
-## 🧠 Technical Architecture & Design Decisions
+## Technical Architecture & Design Decisions
 
 ### **Why Polyglot Microservices?**
 
@@ -350,7 +350,7 @@ After uploading documents about software architecture:
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 fullstack_insightgraph_AI/
@@ -474,3 +474,4 @@ curl -X POST http://localhost:3001/documents/YOUR_DOC_ID/summary
 ## License
 
 MIT
+````
