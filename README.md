@@ -70,21 +70,6 @@ graph TB
 
 ---
 
-## 📊 Roadmap Progress
-
-| Week       | Goal                 | Status      | Key Features                                                                                 |
-| ---------- | -------------------- | ----------- | -------------------------------------------------------------------------------------------- |
-| **Week 1** | Foundation           | ✅ Complete | Node.js + TypeScript, Elasticsearch, Document upload, Basic search                           |
-| **Week 2** | Backend Hardening    | ✅ Complete | Request validation (Zod), Structured logging (Winston), Service layers, `GET /documents/:id` |
-| **Week 3** | LLM Integration      | ✅ Complete | OpenAI integration, `POST /ask` endpoint, Source references, Error handling                  |
-| **Week 4** | Streaming Responses  | ✅ Complete | `POST /ask/stream` (SSE), Real-time token streaming, ChatGPT-style UX                        |
-| **Week 5** | Lightweight RAG      | ✅ Complete | Document chunking (512 tokens), Chunk metadata, Context trimming, Text normalization         |
-| **Week 6** | FastAPI Sidecar      | ✅ Complete | Python microservice for LLM logic, `/llm/ask` & `/llm/stream` endpoints, Ollama integration  |
-| **Week 7** | Minimal Frontend     | ✅ Complete | Next.js UI, Streaming display, Source highlights, Toggle streaming mode                      |
-| **Week 8** | Polish & Positioning | ✅ Complete | Architecture diagram, Complete docs, Example prompts, Interview-ready                        |
-
----
-
 ## API Endpoints
 
 ### **Upload Document**
@@ -432,7 +417,7 @@ principles and pragmatic technology choices.
 
 GET /documents/:id/summary/stream
 
-```
+````
 
 - Returns SSE stream of summary tokens
 
@@ -448,33 +433,6 @@ GET /documents/:id/summary/stream
 - **Logging:** Winston
 - **Validation:** Zod
 - **File Parsing:** mammoth (DOCX), xlsx (Excel), pdfjs-dist (PDF)
-
----
-
-## Architecture (Week 6)
-
-```
-
-┌─────────────┐ ┌──────────────┐ ┌────────────┐
-│ Frontend │────────▶│ Node.js │────────▶│ FastAPI │
-│ (Next.js) │ │ Backend │ │ LLM Svc │
-│ :3000 │ │ :3001 │ │ :8000 │
-└─────────────┘ └──────────────┘ └────────────┘
-│ │
-▼ ▼
-┌──────────────┐ ┌────────────┐
-│Elasticsearch │ │ Ollama │
-│ :9200 │ │ :11434 │
-└──────────────┘ └────────────┘
-
-````
-
-**Why this architecture?**
-
-- **Node.js**: Orchestration, business logic, auth, Elasticsearch queries
-- **FastAPI**: Pure LLM operations (Python ecosystem advantage)
-- **Separation**: Each service does what it's best at
-- **Scalability**: LLM service can scale independently
 
 ---
 
@@ -586,24 +544,6 @@ curl -N -X POST http://localhost:3001/ask/stream \
 # Get document summary
 curl -X POST http://localhost:3001/documents/YOUR_DOC_ID/summary
 ```
-
----
-
-## Current Status
-
-**Weeks 1-6 Complete** ✅
-
-The system now features:
-
-- ✅ Reliable document ingestion with multi-format support
-- ✅ Fast, relevant search with ES scoring
-- ✅ Clean LLM integration with streaming
-- ✅ Real-time token streaming (ChatGPT-style UX)
-- ✅ Text normalization and metadata enrichment
-- ✅ **FastAPI sidecar for LLM operations** (Week 6)
-- ✅ **Polyglot microservices architecture** (Week 6)
-
-**Next:** Week 7-8 frontend polish and documentation.
 
 ---
 
