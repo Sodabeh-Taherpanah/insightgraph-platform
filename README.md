@@ -4,7 +4,7 @@
 
 InsightGraph demonstrates how to build a **scalable AI-powered document search system** with proper engineering practices. This project showcases backend-first development, microservice architecture, and real-time streaming - all without over-engineering.
 
-**Built by a Senior Full-Stack Engineer** to demonstrate system design, API development, and practical AI integration.
+
 
 ---
 
