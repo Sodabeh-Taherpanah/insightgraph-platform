@@ -1,16 +1,16 @@
 # InsightGraph Platform
 
-> InsightGraph demonstrates how to build a **AI-powered document search system** with proper engineering practices.
+> InsightGraph demonstrates how to build an **AI-powered document search system** with solid engineering practices.
 
-> A RAG system with LLM responses.The users **ask natural language questions** about their documents and receive **AI-generated answers** with:
+InsightGraph is a retrieval-augmented generation system where users ask natural language questions about uploaded documents and receive AI-generated answers with:
 
 - Real-time token streaming (ChatGPT-style SSE responses)
 - Document chunking for precise RAG retrieval (512-token chunks, 100-token overlap)
-- Source attribution and relevance scoring ( which doc/chunk answered your question)
+- Source attribution and relevance scoring
 - RAG pipeline: NestJS retrieves top chunks from Elasticsearch and FastAPI generates answer with Ollama
 - Microservices (NestJS for retrieval/orchestration + Python FastAPI for LLM generation)
 
-# Industry use cases:
+## Industry Use Cases
 
 Enterprise knowledge assistant
 Employees upload SOPs, onboarding docs, architecture docs, policies, and ask questions with cited answers.
@@ -18,9 +18,9 @@ Employees upload SOPs, onboarding docs, architecture docs, policies, and ask que
 Customer support copilot
 Support teams search manuals, runbooks, troubleshooting guides, and get grounded answers faster.
 
-and so on ...
+Other internal knowledge retrieval workflows follow the same pattern.
 
-## Tech Stack:
+## Tech Stack
 
 Frontend: Next.js
 Backend: NestJS API
@@ -34,50 +34,33 @@ Model runtime: Ollama
 ```mermaid
 graph TB
   U[User]
-  UI[Web App (Next.js/React)]
-  API[API Gateway (NestJS)<br/>JWT + Rate Limiting + SSE]
+  UI[Next.js Frontend]
+  API[NestJS API Gateway]
+  ING[Ingest Service]
+  RET[Retrieval Service]
+  AIS[AI Service]
+  PY[FastAPI LLM Service]
+  ES[(Elasticsearch)]
+  META[(Postgres Metadata)]
+  RAW[(Object Storage)]
+  OLL[Ollama]
 
   U --> UI
-  UI -->|Upload / Ask| API
-  API -->|Streaming Response| UI
-
-  subgraph SVC[Core Services]
-    ING[Ingest Service]
-    RET[Retrieval Service<br/>BM25 + Vector + Rerank]
-    AIS[AI Service (NestJS)]
-    PY[LLM Service (FastAPI)]
-  end
-
-  API -->|/upload| ING
-  API -->|/ask| RET
-  RET -->|Top Chunks + Scores| AIS
-  AIS -->|Prompt + Context| PY
+  UI -->|Upload and Ask| API
+  API -->|Upload| ING
+  API -->|Ask| RET
+  RET -->|Context| AIS
+  AIS -->|Prompt| PY
   PY -->|Tokens| AIS
-  AIS -->|SSE Tokens + Sources| API
+  AIS -->|Streaming Response| API
+  API --> UI
 
-  subgraph DATA[Data Layer]
-    ES[(Elasticsearch<br/>Search + Vector)]
-    META[(Postgres<br/>Metadata)]
-    RAW[(Object Storage<br/>Raw Documents)]
-    OLL[Ollama]
-  end
-
-  ING -->|Parse + Chunk + Embed + Index| ES
+  ING -->|Index Chunks| ES
   ING -->|Save Metadata| META
-  ING -->|Save Raw Files| RAW
-  RET -->|Retrieve Chunks| ES
+  ING -->|Store Files| RAW
+  RET -->|Search| ES
   RET -->|Read Metadata| META
-  PY -->|Model Inference| OLL
-
-  classDef edge fill:#0f172a,stroke:#94a3b8,color:#e5e7eb,stroke-width:1.2px;
-  classDef gateway fill:#1f2937,stroke:#cbd5e1,color:#f8fafc,stroke-width:1.4px;
-  classDef service fill:#1f2937,stroke:#64748b,color:#e2e8f0,stroke-width:1.2px;
-  classDef store fill:#111827,stroke:#94a3b8,color:#e5e7eb,stroke-width:1.2px;
-
-  class U,UI edge;
-  class API gateway;
-  class ING,RET,AIS,PY service;
-  class ES,META,RAW,OLL store;
+  PY -->|Inference| OLL
 ```
 
 ### **System Flow**
@@ -88,15 +71,16 @@ graph TB
 4. **Generate**: AI service calls FastAPI LLM service with retrieved context
 5. **Stream**: Tokens and source info stream back to the UI in real time
 
-## Run Request Flow:
+## Request Flow
 
 Run the frontend on port 3000
 
-Run the backend on port 3001 :
-1.It searches Elasticsearch and may read/write Redis(port 6379) cache
-2.It calls FastAPI LLM service on port 8000
-3.FastAPI calls Ollama on port 11434
-4.Response streams back to frontend
+Run the backend on port 3001:
+
+1. It searches Elasticsearch and may read or write Redis cache on port 6379.
+2. It calls the FastAPI LLM service on port 8000.
+3. FastAPI calls Ollama on port 11434.
+4. The response streams back to the frontend.
 
 ## API Endpoints
 
