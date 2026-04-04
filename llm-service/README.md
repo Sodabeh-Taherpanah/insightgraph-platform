@@ -197,11 +197,3 @@ const response = await axios.post('http://localhost:8000/llm/ask', {
 
 const answer = response.data.answer;
 ```
-
-## Next Steps (Optional)
-
-- Add embeddings endpoint for semantic search
-- Support multiple LLM providers (Anthropic, Cohere)
-- Add prompt template management
-- Implement caching layer
-- Add request logging and monitoring

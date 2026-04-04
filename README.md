@@ -74,8 +74,7 @@ graph TB
 ## Request Flow
 
 Run the frontend on port 3000
-
-Run the backend on port 3001:
+Run the backend on port 3001
 
 1. It searches Elasticsearch and may read or write Redis cache on port 6379.
 2. It calls the FastAPI LLM service on port 8000.
