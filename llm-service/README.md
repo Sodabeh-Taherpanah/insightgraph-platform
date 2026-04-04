@@ -140,7 +140,7 @@ deactivate
 
 ### Testing & Verification
 
-After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks. This section assumes you've already followed the Setup instructions (virtualenv, dependencies, and starting the service).
+After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks.
 
 1. Verify Ollama is reachable:
 
@@ -179,8 +179,6 @@ curl -N -X POST http://localhost:8000/llm/stream \
 ```
 
 5. Integration: run the NestJS backend and exercise `/ask` through the backend API to confirm end-to-end behavior.
-
-6. Check logs for errors if any tests fail.
 
 ## Integration with NestJS
 
