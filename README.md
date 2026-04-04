@@ -80,7 +80,12 @@ Run the backend on port 3001:
 1. It searches Elasticsearch and may read or write Redis cache on port 6379.
 2. It calls the FastAPI LLM service on port 8000.
 3. FastAPI calls Ollama on port 11434.
-4. The response streams back to the frontend.
+4. The backend supports **both** non-streaming (`/ask`) and streaming (`/ask/stream`) question endpoints:
+
+- `/ask`: Returns a complete answer and sources as JSON.
+- `/ask/stream`: Returns a real-time, token-by-token answer using Server-Sent Events (SSE).
+
+5. The frontend can use either endpoint depending on the use case.
 
 ## API Endpoints
 
@@ -251,7 +256,30 @@ curl -X POST http://localhost:3001/upload \
   }'
 ```
 
-### **2. Ask a Question (Streaming)**
+### **2. Ask a Question (Non-Streaming)**
+
+```bash
+curl -X POST http://localhost:3001/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is Docker?"}'
+```
+
+**Response:**
+
+```json
+{
+  "answer": "Docker is a platform for...",
+  "sources": [
+    {
+      "id": "doc#chunk_0",
+      "title": "Docker Guide",
+      "score": 9.12
+    }
+  ]
+}
+```
+
+### **3. Ask a Question (Streaming)**
 
 ```bash
 curl -X POST http://localhost:3001/ask/stream \
@@ -260,7 +288,7 @@ curl -X POST http://localhost:3001/ask/stream \
   | grep "^data:"
 ```
 
-### **3. View in Browser**
+### **4. View in Browser**
 
 Open `http://localhost:3000` and:
 
