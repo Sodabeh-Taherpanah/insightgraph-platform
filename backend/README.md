@@ -1,8 +1,6 @@
 # Backend Service (NestJS)
 
-This service handles API orchestration, validation, retrieval, ingestion, graph access, and streaming responses.
-
-For LLM-side details, see ../llm-service/README.md.
+This service handles orchestration, authentication, validation, Elasticsearch queries, retrieval, ingestion, graph access, business logic, and streaming responses.
 
 ## Architecture Role
 

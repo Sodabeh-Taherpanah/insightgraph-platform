@@ -20,7 +20,6 @@ For full NestJS backend architecture and route details, see ../backend/README.md
 
 **Separation of Concerns:**
 
-- **NestJS**: Orchestration, auth, ES queries, business logic
 - **FastAPI**: Pure LLM operations (prompt handling, Ollama calls, streaming)
 
 ## Endpoints
