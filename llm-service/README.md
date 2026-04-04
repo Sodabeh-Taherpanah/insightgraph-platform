@@ -88,7 +88,7 @@ Health check.
 
 ### With Virtual Environment
 
-````bash
+```bash
 cd llm-service
 
 # Create virtual environment
@@ -107,9 +107,9 @@ cp .env.example .env
 # Optionally edit OLLAMA_BASE_URL / OLLAMA_MODEL
 
 # Start Ollama (run in a separate terminal)
-```bash
+
 ollama serve
-````
+```
 
 # Check Ollama server
 
@@ -121,15 +121,20 @@ curl http://localhost:11434/api/tags
 
 ```bash
 ollama pull llama3.1
+
 ```
 
 ### Run locally
 
+```bash
 python3 main.py
+```
 
 ### Or with uvicorn directly:
 
+```bash
 uvicorn main:app --reload --port 8000
+```
 
 ### To deactivate when done
 
@@ -137,7 +142,7 @@ deactivate
 
 ## Testing & Verification
 
-### After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks. This section assumes you've already followed the Setup instructions (virtualenv, dependencies, and starting the service).
+After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks. This section assumes you've already followed the Setup instructions (virtualenv, dependencies, and starting the service).
 
 1. Verify Ollama is reachable:
 
