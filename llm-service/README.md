@@ -1,6 +1,12 @@
 # LLM Service (FastAPI Sidecar)
 
-FastAPI microservice handling all LLM operations for InsightGraph.(prompt handling, Ollama calls, streaming)
+FastAPI microservice handling all LLM operations for InsightGraph.
+FastAPI handles:
+
+- Ollama API calls
+- Prompt engineering
+- Token streaming
+-
 
 ## Architecture
 
@@ -81,7 +87,7 @@ Health check.
 
 ## Setup
 
-### Option 1: With Virtual Environment (Recommended)
+### With Virtual Environment
 
 ```bash
 cd llm-service
@@ -101,14 +107,24 @@ pip install -r requirements.txt
 cp .env.example .env
 # Optionally edit OLLAMA_BASE_URL / OLLAMA_MODEL
 
+# Start Ollama (run in a separate terminal)
+```bash
+ollama serve
+```
+
 # Check Ollama server
+```bash
 curl http://localhost:11434/api/tags
+```
 
 # If model not pulled yet:
+```bash
 ollama pull llama3.1
+```
 
 # Run locally
 python3 main.py
+
 # Or with uvicorn directly:
 uvicorn main:app --reload --port 8000
 
@@ -116,86 +132,49 @@ uvicorn main:app --reload --port 8000
 deactivate
 ```
 
-### Testing the LLM Service
+### Testing & Verification
 
-Follow these steps to test the LLM service:
+After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks. This section assumes you've already followed the Setup instructions (virtualenv, dependencies, and starting the service).
 
-1. **Ensure Ollama is running locally:**
-   - Start the Ollama server by running:
-     ```bash
-     ollama serve
-     ```
-   - Verify the server is running by checking available models:
-     ```bash
-     curl http://localhost:11434/api/tags
-     ```
+1. Verify Ollama is reachable:
 
-2. **Pull the required model:**
-   - If the model is not already pulled, run:
-     ```bash
-     ollama pull llama3.1
-     ```
+```bash
+curl http://localhost:11434/api/tags
+```
 
-3. **Start the FastAPI service:**
-   - Navigate to the `llm-service` directory:
-     ```bash
-     cd llm-service
-     ```
-   - Activate the virtual environment:
-     ```bash
-     source venv/bin/activate
-     ```
-   - Start the service:
-     ```bash
-     uvicorn main:app --reload --port 8000
-     ```
+2. If the model is missing, pull it:
 
-4. **Verify the service health:**
-   - Check the `/health` endpoint:
-     ```bash
-     curl http://localhost:8000/health
-     ```
-   - Ensure the response indicates the service is healthy.
+```bash
+ollama pull llama3.1
+```
 
-5. **Test the `/llm/ask` endpoint:**
-   - Send a test request:
-     ```bash
-     curl -X POST http://localhost:8000/llm/ask \
-       -H "Content-Type: application/json" \
-       -d '{
-         "question": "What is FastAPI?",
-         "context": "FastAPI is a modern, fast web framework for building APIs with Python 3.7+",
-         "max_tokens": 100
-       }'
-     ```
-   - Verify the response contains the expected answer.
+3. Check FastAPI health:
 
-6. **Test the `/llm/stream` endpoint:**
-   - Send a streaming request:
-     ```bash
-     curl -N -X POST http://localhost:8000/llm/stream \
-       -H "Content-Type: application/json" \
-       -d '{
-         "question": "Explain microservices",
-         "context": "Microservices are an architectural style that structures an application as small services.",
-         "max_tokens": 80
-       }'
-     ```
-   - Verify the response streams tokens progressively.
+```bash
+curl http://localhost:8000/health
+```
 
-7. **Test integration with NestJS backend:**
+4. Functional API checks (use these against a running FastAPI instance):
 
-- Ensure the NestJS backend is running.
-- Verify it can successfully call the FastAPI service and return results to the frontend.
+- Non-streaming `/llm/ask`:
 
-8. **Check logs for errors:**
-   - Review the FastAPI logs for any errors or warnings during testing.
+```bash
+curl -X POST http://localhost:8000/llm/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is FastAPI?","context":"FastAPI is a modern web framework","max_tokens":100}'
+```
 
-9. **Deactivate the virtual environment:**
-   - When testing is complete, deactivate the virtual environment:
-     ```bash
-     deactivate
-     ```
+- Streaming `/llm/stream` (SSE):
+
+```bash
+curl -N -X POST http://localhost:8000/llm/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question":"Explain microservices","context":"Microservices are an architectural style","max_tokens":80}'
+```
+
+5. Integration: run the NestJS backend and exercise `/ask` through the backend API to confirm end-to-end behavior.
+
+6. Check logs for errors if any tests fail.
 
 ## Integration with NestJS
 
@@ -212,12 +191,6 @@ const response = await axios.post('http://localhost:8000/llm/ask', {
 
 const answer = response.data.answer;
 ```
-
-FastAPI only handles:
-
-- Ollama API calls
-- Prompt engineering
-- Token streaming
 
 ## Next Steps (Optional)
 
