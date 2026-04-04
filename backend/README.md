@@ -4,8 +4,6 @@ This service handles orchestration, authentication, validation, Elasticsearch qu
 
 ## Architecture Role
 
-Flow:
-
 Frontend (Next.js) -> Backend (NestJS) -> FastAPI LLM Service -> Ollama
 
 Data and cache dependencies:

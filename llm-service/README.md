@@ -21,8 +21,6 @@ FastAPI handles:
 └──────────────┘         └────────────┘
 ```
 
-**Separation of Concerns:**
-
 ## Endpoints
 
 ### `POST /llm/ask`
@@ -140,18 +138,15 @@ uvicorn main:app --reload --port 8000
 
 deactivate
 
-## Testing & Verification
+### Testing & Verification
 
 After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks. This section assumes you've already followed the Setup instructions (virtualenv, dependencies, and starting the service).
 
 1. Verify Ollama is reachable:
 
-````
-
-
 ```bash
 curl http://localhost:11434/api/tags
-````
+```
 
 2. If the model is missing, pull it:
 
