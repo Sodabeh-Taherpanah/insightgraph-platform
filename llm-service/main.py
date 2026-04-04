@@ -45,7 +45,7 @@ class AskRequest(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     model: str
-    tokens_used: Optional[int] = None
+    tokens_used: Optional[int] = None  # total model tokens ( a unit of text that model processes) consumed
 
 # System prompt for RAG
 SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on the provided context from documents.

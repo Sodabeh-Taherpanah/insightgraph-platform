@@ -1,8 +1,6 @@
 # LLM Service (FastAPI Sidecar)
 
-FastAPI microservice handling all LLM operations for InsightGraph.
-
-For full NestJS backend architecture and route details, see ../backend/README.md.
+FastAPI microservice handling all LLM operations for InsightGraph.(prompt handling, Ollama calls, streaming)
 
 ## Architecture
 
@@ -20,8 +18,6 @@ For full NestJS backend architecture and route details, see ../backend/README.md
 
 **Separation of Concerns:**
 
-- **FastAPI**: Pure LLM operations (prompt handling, Ollama calls, streaming)
-
 ## Endpoints
 
 ### `POST /llm/ask`
@@ -32,10 +28,10 @@ Standard completion - returns full answer at once.
 
 ```json
 {
-  "question": "What is React?",
-  "context": "React is a JavaScript library...", //after search Elasticsearch by nestjs and collect relevant text
-  "max_tokens": 500,
-  "temperature": 0.3
+  "question": "What is the onboarding process for engineers at Company X?",
+  "context": "At Company X, engineering onboarding covers setting up your laptop, configuring development tools, getting access to internal repositories, completing security and compliance training, and meeting your onboarding mentor. All new engineers must finish these steps and submit their first pull request within two weeks.",
+  "max_tokens": 300,
+  "temperature": 0.2
 }
 ```
 
@@ -43,26 +39,28 @@ Standard completion - returns full answer at once.
 
 ```json
 {
-  "answer": "React is a JavaScript library for building user interfaces...",
+  "answer": "At Company X, engineering onboarding is completed over the first two weeks. A new engineer sets up their laptop and development tools, gets access to internal repositories, completes security and compliance training, works with an onboarding mentor, and is expected to submit a first pull request by the end of that period.",
   "model": "llama3.1",
-  "tokens_used": 245
+  "tokens_used": 60
 }
 ```
 
 ### `POST /llm/stream`
 
-like llm/ask but Streaming completion - returns tokens progressively via SSE.
+Same request body as `/llm/ask`, but returns the answer progressively as raw SSE token chunks.
 
 **Request:** Same as `/llm/ask`
 
 **Response:** Server-Sent Events stream
 
 ```
-data: React
-data:  is
-data:  a
-data:  JavaScript
-data:  library
+data: At Company X,
+data:  engineering onboarding is completed over the first two weeks.
+data:  A new engineer sets up their laptop and development tools,
+data:  gets access to internal repositories,
+data:  completes security and compliance training,
+data:  works with an onboarding mentor,
+data:  and is expected to submit a first pull request by the end of that period.
 ...
 data: [DONE]
 ```
@@ -82,16 +80,6 @@ Health check.
 ```
 
 ## Setup
-
-### Quick Run (Exact Commands)
-
-```bash
-cd /Users/sudabework/my_real_project/fullstack_insightgraph_AI/llm-service
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python3 main.py
-```
 
 ### Option 1: With Virtual Environment (Recommended)
 
