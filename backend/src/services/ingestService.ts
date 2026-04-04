@@ -14,7 +14,7 @@ export interface IngestResult {
 
 export async function ingestDocument(
   title: string,
-  text: string,
+  text: string, //raw document text
 ): Promise<IngestResult> {
   logger.info('Starting document ingestion', {
     title,
@@ -22,7 +22,7 @@ export async function ingestDocument(
   });
 
   try {
-    // 1️⃣ Split document into chunks for better RAG retrieval
+    // Split document into chunks for better RAG retrieval
     const cleaned = normalizeText(text);
     const chunks = chunkDocument(title, title, cleaned);
     logger.info('Document chunked', {
@@ -37,6 +37,7 @@ export async function ingestDocument(
     });
 
     // Index all chunks in Elasticsearch with metadata
+    // Stores each chunk in the search index so the app can find relevant text later.
     let indexedCount = 0;
     for (const chunk of chunks) {
       await indexDocument({
@@ -59,14 +60,15 @@ export async function ingestDocument(
       chunksIndexed: indexedCount,
     });
 
-    // 2️⃣ Extract knowledge triplets from full text (for graph)
+    //  Extract knowledge triplets from full text (for graph)
     const triplets = await extractTripletsFromText(text);
     logger.info('Triplets extracted', { count: triplets.length });
 
     const addedNodes: any[] = [];
+    //stores the nodes that were actually created during this ingestion
     const addedEdges: any[] = [];
     const nodeMap = new Map<string, string>(); // label -> nodeId
-
+    //nodeMap prevents creating the same node more than once in the same loop
     for (const { subject, predicate, object } of triplets) {
       // Add subject node if not exists
       let subjectId = nodeMap.get(subject);

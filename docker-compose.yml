@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  # Redis (cache layer)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    networks:
+      - insightgraph
+    restart: unless-stopped
+
   # Elasticsearch (existing)
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
@@ -54,10 +63,12 @@ services:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - LLM_SERVICE_URL=http://llm-service:8000
+      - REDIS_URL=redis://redis:6379
       - PORT=3001
     depends_on:
       - elasticsearch
       - llm-service
+      - redis
     networks:
       - insightgraph
     volumes:

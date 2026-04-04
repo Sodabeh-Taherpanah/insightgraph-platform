@@ -17,8 +17,8 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 app = FastAPI(
-    title="InsightGraph LLM Service",
-    description="FastAPI sidecar for LLM operations",
+    title="LLM Service",
+    description="FastAPI for LLM operations",
     version="1.0.0"
 )
 
@@ -78,19 +78,11 @@ async def health_check():
 
 @app.post("/llm/ask", response_model=AskResponse)
 async def ask_question(request: AskRequest):
-    """
-    Standard endpoint - returns complete answer
-    
-    Node.js backend:
-    1. Queries Elasticsearch
-    2. Builds context from top documents
-    3. Calls this endpoint
-    4. Returns answer + sources to frontend
-    """
+    """Send question + context to Ollama and return the full answer."""
     try:
         # Build a single prompt string for Ollama `/api/generate` API
         prompt = f"{SYSTEM_PROMPT}\n\nContext:\n{request.context}\n\nQuestion: {request.question}"
-
+        # send this generation randomness setting to the model
         options = {"temperature": request.temperature}
         if request.max_tokens:
             options["num_predict"] = request.max_tokens
@@ -141,13 +133,9 @@ async def ask_question(request: AskRequest):
 
 @app.post("/llm/stream")
 async def stream_question(request: AskRequest):
-    """
-    Streaming endpoint - returns answer tokens progressively
-    
-    Returns Server-Sent Events (SSE) compatible stream
-    Compatible with existing Node.js SSE forwarding
-    """
+    """Stream Ollama response token-by-token as Server-Sent Events."""
     async def generate_stream():
+        """Async generator that yields SSE-formatted tokens from Ollama."""
         try:
             prompt = f"{SYSTEM_PROMPT}\n\nContext:\n{request.context}\n\nQuestion: {request.question}"
 
@@ -210,6 +198,7 @@ async def stream_question(request: AskRequest):
     )
 
 if __name__ == "__main__":
+    # Start uvicorn directly when running file,  the ASGI web server used to run the FastAPI app`
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
     uvicorn.run(

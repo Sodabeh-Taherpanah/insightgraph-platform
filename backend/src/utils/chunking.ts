@@ -12,11 +12,6 @@ function tokensToWords(tokens: number): number {
   return Math.ceil(tokens / TOKENS_PER_WORD);
 }
 
-// Convert approximate word count to tokens
-function wordsToTokens(words: number): number {
-  return Math.ceil(words * TOKENS_PER_WORD);
-}
-
 export interface DocumentChunk {
   chunkId: string; // docId#chunk_0, docId#chunk_1, etc.
   sourceId: string; // Original document ID

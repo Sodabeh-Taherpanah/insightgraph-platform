@@ -3,7 +3,20 @@ import axios from 'axios';
 export type Triplet = { subject: string; predicate: string; object: string };
 
 /**
- * Attempts to use an LLM to extract triplets.
+ * Attempts to use an LLM to extract triplets(an array of object).
+ * triplet: { subject: string; predicate: string; object: string }
+ * subject: the source entity , predicate: the relationship, object: the target entity.   subject and object become a node, predicate becomes an edge in the knowledge graph.
+ *example:  {
+  subject: "NestJS",
+  predicate: "uses",
+  object: "TypeScript"
+}
+ * knowledge graph is a graph of facts. 
+ * the app turns extracted facts from text into:
+ *
+ *     nodes: entities or things
+ *     edges: relationships between those things
+ *
  * Fallback -> basic heuristic extraction if API key is not provided.
  */
 export async function extractTripletsFromText(
@@ -66,7 +79,8 @@ function heuristicExtract(text: string): Triplet[] {
   const sentences = text
     .split(/[.\n]/)
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean); //Removes empty strings like ""
+
   const out: Triplet[] = [];
 
   for (const s of sentences) {

@@ -1,74 +1,101 @@
 # InsightGraph Platform
 
-> A production-ready RAG system with streaming LLM responses, built with clean architecture and polyglot microservices
+> InsightGraph demonstrates how to build a **AI-powered document search system** with proper engineering practices.
 
-InsightGraph demonstrates how to build a **scalable AI-powered document search system** with proper engineering practices. This project showcases backend-first development, microservice architecture, and real-time streaming - all without over-engineering.
+> A RAG system with LLM responses.The users **ask natural language questions** about their documents and receive **AI-generated answers** with:
+- Real-time token streaming (ChatGPT-style SSE responses)
+- Document chunking for precise RAG retrieval (512-token chunks, 100-token overlap)
+- Source attribution and relevance scoring ( which doc/chunk answered your question)
+- RAG pipeline: NestJS retrieves top chunks from Elasticsearch and FastAPI generates answer with Ollama
+- Microservices (NestJS for retrieval/orchestration + Python FastAPI for LLM generation)
 
+# Industry use cases:
 
+Enterprise knowledge assistant
+Employees upload SOPs, onboarding docs, architecture docs, policies, and ask questions with cited answers.
 
----
+Customer support copilot
+Support teams search manuals, runbooks, troubleshooting guides, and get grounded answers faster.
 
-## Project Goal
+and so on ...
 
-Enable users to **ask natural language questions** about their documents and receive **AI-generated answers** grounded in actual source data, with:
+## Tech Stack:
 
-- Real-time token streaming (ChatGPT-style UX)
-- Source attribution and relevance scoring
-- Document chunking for precise RAG retrieval
-- Polyglot microservices (Node.js + Python)
-
----
+Frontend: Next.js
+Backend: NestJS API
+LLM sidecar: FastAPI service
+Search store: Elasticsearch
+Cache: Redis
+Model runtime: Ollama
 
 ## Architecture
 
 ```mermaid
 graph TB
-    subgraph "Frontend - Next.js"
-        UI[React UI<br/>Port 3000]
-    end
+  U[User]
+  UI[Web App (Next.js/React)]
+  API[API Gateway (NestJS)<br/>JWT + Rate Limiting + SSE]
 
-    subgraph "Backend - Node.js/Express"
-        API[REST API<br/>Port 3001]
-        Search[Search Service]
-        Ingest[Ingest Service]
-        AI[AI Service]
-        Graph[Graph Service]
-    end
+  U --> UI
+  UI -->|Upload / Ask| API
+  API -->|Streaming Response| UI
 
-    subgraph "LLM Service - FastAPI"
-        LLM[Python LLM Service<br/>Port 8000]
-    end
+  subgraph SVC[Core Services]
+    ING[Ingest Service]
+    RET[Retrieval Service<br/>BM25 + Vector + Rerank]
+    AIS[AI Service (NestJS)]
+    PY[LLM Service (FastAPI)]
+  end
 
-    subgraph "Data Layer"
-        ES[(Elasticsearch<br/>Port 9200)]
-        Ollama[Ollama LLM<br/>Port 11434]
-    end
+  API -->|/upload| ING
+  API -->|/ask| RET
+  RET -->|Top Chunks + Scores| AIS
+  AIS -->|Prompt + Context| PY
+  PY -->|Tokens| AIS
+  AIS -->|SSE Tokens + Sources| API
 
-    UI -->|HTTP/SSE| API
-    API -->|Document Chunks| Ingest
-    API -->|Query| Search
-    API -->|Stream| AI
-    Search -->|Index| ES
-    Ingest -->|Store| ES
-    AI -->|LLM Request| LLM
-    LLM -->|Generate| Ollama
-    Ingest -->|Triplets| Graph
+  subgraph DATA[Data Layer]
+    ES[(Elasticsearch<br/>Search + Vector)]
+    META[(Postgres<br/>Metadata)]
+    RAW[(Object Storage<br/>Raw Documents)]
+    OLL[Ollama]
+  end
 
-    style UI fill:#e1f5ff
-    style API fill:#fff4e1
-    style LLM fill:#ffe1f5
-    style ES fill:#e8f5e9
-    style Ollama fill:#f3e5f5
+  ING -->|Parse + Chunk + Embed + Index| ES
+  ING -->|Save Metadata| META
+  ING -->|Save Raw Files| RAW
+  RET -->|Retrieve Chunks| ES
+  RET -->|Read Metadata| META
+  PY -->|Model Inference| OLL
+
+  classDef edge fill:#0f172a,stroke:#94a3b8,color:#e5e7eb,stroke-width:1.2px;
+  classDef gateway fill:#1f2937,stroke:#cbd5e1,color:#f8fafc,stroke-width:1.4px;
+  classDef service fill:#1f2937,stroke:#64748b,color:#e2e8f0,stroke-width:1.2px;
+  classDef store fill:#111827,stroke:#94a3b8,color:#e5e7eb,stroke-width:1.2px;
+
+  class U,UI edge;
+  class API gateway;
+  class ING,RET,AIS,PY service;
+  class ES,META,RAW,OLL store;
 ```
 
 ### **System Flow**
 
-1. **Upload**: User uploads document → Backend chunks it (512 tokens) → Stores in Elasticsearch with metadata
-2. **Search**: Query hits ES → Returns top chunks with relevance scores
-3. **Ask**: Question → Search top chunks → Build context → Stream to FastAPI → Ollama generates → Backend forwards tokens → Frontend displays real-time
-4. **Graph**: Extract triplets from documents → Build knowledge graph
+1. **Upload**: User uploads a document to the API
+2. **Ingest**: Ingest service parses, chunks, embeds, and indexes data
+3. **Retrieve**: Retrieval service gets the best chunks from Elasticsearch
+4. **Generate**: AI service calls FastAPI LLM service with retrieved context
+5. **Stream**: Tokens and source info stream back to the UI in real time
 
----
+## Run Request Flow:
+
+Run the frontend on port 3000
+
+Run the backend on port 3001 :
+1.It searches Elasticsearch and may read/write Redis(port 6379) cache
+2.It calls FastAPI LLM service on port 8000
+3.FastAPI calls Ollama on port 11434
+4.Response streams back to frontend
 
 ## API Endpoints
 
@@ -174,7 +201,7 @@ data: [DONE]
 
 ### **Prerequisites**
 
-- Node.js 18+ and npm
+- Node.js 22.19.0 and npm
 - Python 3.12+ with pip
 - Elasticsearch 8.x running on port 9200
 - Ollama installed with `llama3.1` model
@@ -203,7 +230,7 @@ ollama pull llama3.1  # Download model
 ```bash
 cd backend
 npm install
-npm run dev  # Runs on http://localhost:3001
+npm run dev  # Runs NestJS API on http://localhost:3001
 ```
 
 **4. FastAPI LLM Service**
@@ -286,11 +313,12 @@ After uploading documents about software architecture:
 
 ### **Why Polyglot Microservices?**
 
-**Node.js Backend (Express)**
+**Node.js Backend (NestJS)**
 
 - Fast async I/O for API orchestration
-- Rich ecosystem for web APIs
+- Modular architecture (controllers, providers, modules)
 - TypeScript for type safety
+- Runs on NestJS with the Express adapter
 - Easy integration with Elasticsearch
 
 **Python FastAPI for LLM**
@@ -354,12 +382,19 @@ After uploading documents about software architecture:
 
 ```
 fullstack_insightgraph_AI/
-├── backend/                 # Node.js/Express API
+├── backend/                 # NestJS API
 │   ├── src/
-│   │   ├── routes/          # API endpoints
-│   │   │   ├── ask.ts       # /ask & /ask/stream
-│   │   │   ├── upload.ts    # /upload
-│   │   │   └── graph.ts     # /graph
+│   │   ├── controllers/     # NestJS route handlers
+│   │   │   ├── ask.controller.ts
+│   │   │   ├── documents.controller.ts
+│   │   │   ├── graph.controller.ts
+│   │   │   ├── search.controller.ts
+│   │   │   └── upload.controller.ts
+│   │   ├── common/          # Shared NestJS filters
+│   │   │   └── filters/
+│   │   ├── main.ts          # NestJS bootstrap
+│   │   ├── app.module.ts    # Root module
+│   │   ├── routes/          # Legacy Express routes kept during migration
 │   │   ├── services/
 │   │   │   ├── aiService.ts      # LLM integration
 │   │   │   ├── searchService.ts  # Elasticsearch
@@ -426,7 +461,7 @@ curl -N http://localhost:8000/llm/stream \
   }'
 ```
 
-### Test Through Node.js Backend
+### Test Through NestJS Backend API
 
 ```bash
 # First, upload a document

@@ -1,12 +1,15 @@
 # LLM Service (FastAPI Sidecar)
 
+
 FastAPI microservice handling all LLM operations for InsightGraph.
+
+For full NestJS backend architecture and route details, see ../backend/README.md.
 
 ## Architecture
 
 ```
 ┌─────────────┐         ┌──────────────┐         ┌────────────┐
-│  Frontend   │────────▶│   Node.js    │────────▶│  FastAPI   │
+│  Frontend   │────────▶│    NestJS    │────────▶│  FastAPI   │
 │  (Next.js)  │         │   Backend    │         │  LLM Svc   │
 └─────────────┘         └──────────────┘         └────────────┘
                                │                         │
@@ -18,15 +21,8 @@ FastAPI microservice handling all LLM operations for InsightGraph.
 
 **Separation of Concerns:**
 
-- **Node.js**: Orchestration, auth, ES queries, business logic
-- **FastAPI**: Pure LLM operations (calling Ollama, prompt engineering)
-
-## Why FastAPI?
-
-1. **Python ecosystem** - Better LLM tooling and libraries
-2. **Performance** - Async by default, efficient streaming
-3. **Flexibility** - Easy to add embeddings, different models, etc.
-4. **Architecture maturity** - Shows polyglot microservices skill
+- **NestJS**: Orchestration, auth, ES queries, business logic
+- **FastAPI**: Pure LLM operations (prompt handling, Ollama calls, streaming.)
 
 ## Endpoints
 
@@ -39,7 +35,7 @@ Standard completion - returns full answer at once.
 ```json
 {
   "question": "What is React?",
-  "context": "React is a JavaScript library...",
+  "context": "React is a JavaScript library...",//after search Elasticsearch by nestjs and collect relevant text
   "max_tokens": 500,
   "temperature": 0.3
 }
@@ -57,7 +53,7 @@ Standard completion - returns full answer at once.
 
 ### `POST /llm/stream`
 
-Streaming completion - returns tokens progressively via SSE.
+like llm/ask but  Streaming completion - returns tokens progressively via SSE.
 
 **Request:** Same as `/llm/ask`
 
@@ -89,6 +85,16 @@ Health check.
 
 ## Setup
 
+### Quick Run (Exact Commands)
+
+```bash
+cd /Users/sudabework/my_real_project/fullstack_insightgraph_AI/llm-service
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 main.py
+```
+
 ### Option 1: With Virtual Environment (Recommended)
 
 ```bash
@@ -116,7 +122,7 @@ curl http://localhost:11434/api/tags
 ollama pull llama3.1
 
 # Run locally
-python main.py
+python3 main.py
 # Or with uvicorn directly:
 uvicorn main:app --reload --port 8000
 
@@ -191,9 +197,10 @@ Follow these steps to test the LLM service:
      ```
    - Verify the response streams tokens progressively.
 
-7. **Test integration with Node.js backend:**
-   - Ensure the Node.js backend is running.
-   - Verify it can successfully call the FastAPI service and return results to the frontend.
+7. **Test integration with NestJS backend:**
+
+- Ensure the NestJS backend is running.
+- Verify it can successfully call the FastAPI service and return results to the frontend.
 
 8. **Check logs for errors:**
    - Review the FastAPI logs for any errors or warnings during testing.
@@ -204,12 +211,12 @@ Follow these steps to test the LLM service:
      deactivate
      ```
 
-## Integration with Node.js
+## Integration with NestJS
 
-The Node.js backend calls this service:
+The NestJS backend calls this service:
 
 ```typescript
-// In Node.js aiService.ts
+// In backend aiService.ts
 const response = await axios.post('http://localhost:8000/llm/ask', {
   question: question,
   context: context,
@@ -219,13 +226,6 @@ const response = await axios.post('http://localhost:8000/llm/ask', {
 
 const answer = response.data.answer;
 ```
-
-Node.js still handles:
-
-- Elasticsearch queries
-- Building context from documents
-- Returning sources to frontend
-- API auth and rate limiting
 
 FastAPI only handles:
 
