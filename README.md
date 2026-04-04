@@ -3,6 +3,7 @@
 > InsightGraph demonstrates how to build a **AI-powered document search system** with proper engineering practices.
 
 > A RAG system with LLM responses.The users **ask natural language questions** about their documents and receive **AI-generated answers** with:
+
 - Real-time token streaming (ChatGPT-style SSE responses)
 - Document chunking for precise RAG retrieval (512-token chunks, 100-token overlap)
 - Source attribution and relevance scoring ( which doc/chunk answered your question)
