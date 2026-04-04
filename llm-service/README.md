@@ -1,6 +1,5 @@
 # LLM Service (FastAPI Sidecar)
 
-
 FastAPI microservice handling all LLM operations for InsightGraph.
 
 For full NestJS backend architecture and route details, see ../backend/README.md.
@@ -8,21 +7,21 @@ For full NestJS backend architecture and route details, see ../backend/README.md
 ## Architecture
 
 ```
-┌─────────────┐         ┌──────────────┐         ┌────────────┐
-│  Frontend   │────────▶│    NestJS    │────────▶│  FastAPI   │
-│  (Next.js)  │         │   Backend    │         │  LLM Svc   │
-└─────────────┘         └──────────────┘         └────────────┘
-                               │                         │
-                               ▼                         ▼
-                        ┌──────────────┐         ┌────────────┐
-                        │Elasticsearch │         │  Ollama    │
-                        └──────────────┘         └────────────┘
+┌──────────────┐         ┌────────────┐
+│    NestJS    │────────▶│  FastAPI   │
+│   Backend    │         │  LLM Svc   │
+└──────────────┘         └────────────┘
+  │                         │
+  ▼                         ▼
+┌──────────────┐         ┌────────────┐
+│Elasticsearch │         │  Ollama    │
+└──────────────┘         └────────────┘
 ```
 
 **Separation of Concerns:**
 
 - **NestJS**: Orchestration, auth, ES queries, business logic
-- **FastAPI**: Pure LLM operations (prompt handling, Ollama calls, streaming.)
+- **FastAPI**: Pure LLM operations (prompt handling, Ollama calls, streaming)
 
 ## Endpoints
 
@@ -35,7 +34,7 @@ Standard completion - returns full answer at once.
 ```json
 {
   "question": "What is React?",
-  "context": "React is a JavaScript library...",//after search Elasticsearch by nestjs and collect relevant text
+  "context": "React is a JavaScript library...", //after search Elasticsearch by nestjs and collect relevant text
   "max_tokens": 500,
   "temperature": 0.3
 }
@@ -53,7 +52,7 @@ Standard completion - returns full answer at once.
 
 ### `POST /llm/stream`
 
-like llm/ask but  Streaming completion - returns tokens progressively via SSE.
+like llm/ask but Streaming completion - returns tokens progressively via SSE.
 
 **Request:** Same as `/llm/ask`
 
