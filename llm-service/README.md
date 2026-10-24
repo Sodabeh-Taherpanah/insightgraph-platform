@@ -89,7 +89,7 @@ Health check.
 ```bash
 cd llm-service
 
-# Create virtual environment
+# Create virtual environment - once
 python3 -m venv venv
 
 # Activate virtual environment
@@ -181,8 +181,6 @@ curl -N -X POST http://localhost:8000/llm/stream \
 5. Integration: run the NestJS backend and exercise `/ask` through the backend API to confirm end-to-end behavior.
 
 ## Integration with NestJS
-
-The NestJS backend calls this service:
 
 ```typescript
 // In backend aiService.ts

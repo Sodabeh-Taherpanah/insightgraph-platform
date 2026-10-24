@@ -51,11 +51,12 @@ class AskResponse(BaseModel):
 SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on the provided context from documents.
 
 Guidelines:
-- Answer clearly and concisely based on the context
-- If the context doesn't contain enough information, say so
-- Reference specific information from the context when possible
-- Keep your answer relevant and focused on the question
-- Do not make up information outside the provided context"""
+- Read the provided context and synthesize a concise, useful answer for a human reader.
+- Paraphrase and summarize; do not repeat the context verbatim or copy long sentences.
+- If the context lacks sufficient detail, say so and note what is missing.
+- Prefer short, explanatory sentences and include one or two practical next steps or clarifying points when helpful.
+- Reference specific facts from the context when relevant, but avoid long verbatim quotes.
+- Do not invent facts outside the provided context."""
 
 @app.get("/health")
 async def health_check():
@@ -109,12 +110,49 @@ async def ask_question(request: AskRequest):
                 else:
                     raise
 
-        # Ollama `/api/generate` returns `message.content` or `output` depending on version
-        answer = (
-            data.get("message", {}) .get("content")
-            if isinstance(data.get("message"), dict)
-            else None
-        ) or data.get("output") or data.get("content") or ""
+        # Ollama `/api/generate` may return the generated text under different keys , there are two endpoints,but different Ollama versions / adapters / streaming vs non‑streaming modes.
+        # so they return the generated text in different JSON keys . d.get(...)
+        def _extract_answer(d: dict) -> str:
+            if not d:
+                return ""
+            # common Ollama field.  by api/generate
+            if isinstance(d.get("response"), str):
+                return d.get("response")
+            # message object with content by api/chat
+            msg = d.get("message")
+            if isinstance(msg, dict):
+                for k in ("content", "response", "text"):
+                    if isinstance(msg.get(k), str) and msg.get(k):
+                        return msg.get(k)
+            # direct output field (string or list)
+            out = d.get("output") or d.get("content")
+            if isinstance(out, str) and out:
+                return out
+            if isinstance(out, list) and out:
+                first = out[0]
+                if isinstance(first, str) and first:
+                    return first
+                if isinstance(first, dict):
+                    for k in ("content", "text", "response"):
+                        if isinstance(first.get(k), str) and first.get(k):
+                            return first.get(k)
+            # OpenAI-like choices
+            choices = d.get("choices")
+            if isinstance(choices, list) and choices:
+                c0 = choices[0]
+                if isinstance(c0, dict):
+                    if isinstance(c0.get("message"), dict):
+                        return c0.get("message", {}).get("content", "") or c0.get("text", "")
+                    return c0.get("text", "") or c0.get("message", "")
+            # fallback: return first non-empty string field (excluding meta)
+            for k, v in d.items():
+                if k in ("model", "id"):
+                    continue
+                if isinstance(v, str) and v:
+                    return v
+            return ""
+
+        answer = _extract_answer(data) or ""
         tokens_used = None
         if "prompt_eval_count" in data or "eval_count" in data:
             tokens_used = (data.get("prompt_eval_count", 0) or 0) + (
@@ -198,7 +236,7 @@ async def stream_question(request: AskRequest):
     )
 
 if __name__ == "__main__":
-    # Start uvicorn directly when running file,  the ASGI web server used to run the FastAPI app`
+    # Start uvicorn directly when running file,  the ASGI web server used to run the FastAPI app on  port 8000`
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
     uvicorn.run(
