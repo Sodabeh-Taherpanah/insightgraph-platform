@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { API_BASE } from '../lib/api';
 
 export default function SearchBox() {
   const [query, setQuery] = useState('');
@@ -9,7 +10,7 @@ export default function SearchBox() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch(
-      `http://localhost:3001/search?q=${encodeURIComponent(query)}`,
+      `${API_BASE}/search?q=${encodeURIComponent(query)}`,
     );
     const data = await res.json();
     setResults(data.results || []);
@@ -61,7 +62,7 @@ export default function SearchBox() {
               <button
                 onClick={() =>
                   window.open(
-                    `http://localhost:3000/documents/${r.id}`,
+                    `/documents/${encodeURIComponent(r.id)}`,
                     '_blank',
                   )
                 }

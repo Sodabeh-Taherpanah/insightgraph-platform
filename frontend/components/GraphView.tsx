@@ -9,6 +9,7 @@ import ReactFlow, {
   MiniMap,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { API_BASE } from '../lib/api';
 
 export default function GraphView() {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -19,7 +20,7 @@ export default function GraphView() {
   const loadGraph = () => {
     setLoading(true);
     setError(null);
-    fetch('http://localhost:3001/graph')
+    fetch(`${API_BASE}/graph`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch graph data');
         return res.json();

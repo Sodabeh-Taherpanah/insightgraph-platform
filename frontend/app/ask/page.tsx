@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../lib/api';
 
 export default function AskPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -19,7 +20,7 @@ export default function AskPage() {
     setSources([]);
 
     try {
-      const response = await fetch('http://localhost:3001/ask/stream', {
+      const response = await fetch(`${API_BASE}/ask/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),

@@ -43,7 +43,7 @@ export default function AskBox() {
   };
 
   const handleStandardAsk = async () => {
-    const res = await fetch('http://localhost:3001/ask', {
+    const res = await fetch(`${API_BASE}/ask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export default function AskBox() {
   };
 
   const handleStreamingAsk = async () => {
-    const res = await fetch('http://localhost:3001/ask/stream', {
+    const res = await fetch(`${API_BASE}/ask/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

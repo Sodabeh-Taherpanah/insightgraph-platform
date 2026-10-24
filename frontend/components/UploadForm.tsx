@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { API_BASE } from '../lib/api';
 
 export default function UploadForm() {
   const [title, setTitle] = useState('');
@@ -19,7 +20,7 @@ export default function UploadForm() {
     if (file) formData.append('file', file);
     else formData.append('text', text);
 
-    const res = await fetch('http://localhost:3001/upload', {
+    const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       body: formData,
     });
