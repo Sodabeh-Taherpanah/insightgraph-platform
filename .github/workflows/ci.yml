@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      # The backend has no ESLint setup yet; type-check instead.
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # Existing lint errors predate CI; remove continue-on-error once fixed.
+      - run: npm run lint
+        continue-on-error: true
+      - run: npm run build
+
+  llm-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: llm-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: llm-service/requirements.txt
+      - run: pip install -r requirements.txt ruff
+      - run: ruff check .
+      - run: python -m compileall -q main.py
