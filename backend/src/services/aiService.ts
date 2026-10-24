@@ -354,7 +354,7 @@ export async function summarizeTextStreaming(
         },
       );
 
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         resp.data.on('data', (chunk: Buffer) => {
           const lines = chunk.toString().split('\n');
           for (const line of lines) {
@@ -368,7 +368,7 @@ export async function summarizeTextStreaming(
                 const json = JSON.parse(data);
                 const token = json.choices?.[0]?.delta?.content;
                 if (token) onToken(token);
-              } catch (e) {
+              } catch {
                 // ignore parse errors
               }
             }

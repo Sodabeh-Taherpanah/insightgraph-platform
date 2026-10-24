@@ -7,7 +7,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Multer } from 'multer';
 import { z } from 'zod';
 import { IngestService } from '../services/ingestService';
 import { parseUploadedFile } from '../utils/fileParser';

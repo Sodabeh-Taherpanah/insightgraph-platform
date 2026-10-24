@@ -241,11 +241,12 @@ fullstack_insightgraph_AI/
 
 ```bash
 cd backend
+npm run lint
 npm test            # Jest: chunking unit tests, POST /ask and /ask/stream (SSE) integration tests
 npm run typecheck
 ```
 
-The `/ask` tests mock the Elasticsearch/Redis layer and the FastAPI call, so they need no running services. GitHub Actions (`.github/workflows/ci.yml`) runs type-check, build and tests for the backend, lint and build for the frontend, and `ruff` for the llm-service. Frontend lint currently reports pre-existing errors and is non-blocking in CI.
+The `/ask` tests mock the Elasticsearch/Redis layer and the FastAPI call, so they need no running services. GitHub Actions (`.github/workflows/ci.yml`) runs lint, type-check, build and tests for the backend, lint and build for the frontend, and `ruff` for the llm-service. Frontend lint currently reports pre-existing errors and is non-blocking in CI.
 
 ## Testing the LLM service directly
 

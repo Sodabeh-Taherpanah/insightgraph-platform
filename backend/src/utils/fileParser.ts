@@ -19,10 +19,10 @@ export function normalizeText(input: string): string {
   let text = input.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // Ensure bullets start on their own line (insert newline before • or - if needed)
-  text = text.replace(/([^\n])\s*(?=([•\-]\s))/g, '$1\n');
+  text = text.replace(/([^\n])\s*(?=([•-]\s))/g, '$1\n');
 
   // Normalize bullet prefixes (use a single bullet char)
-  text = text.replace(/^[ \t]*[\u2022\-]\s*/gm, '• ');
+  text = text.replace(/^[ \t]*[\u2022-]\s*/gm, '• ');
 
   // Collapse multiple spaces
   text = text.replace(/[ \t]{2,}/g, ' ');

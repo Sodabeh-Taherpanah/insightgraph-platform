@@ -19,7 +19,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      # The backend has no ESLint setup yet; type-check instead.
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
