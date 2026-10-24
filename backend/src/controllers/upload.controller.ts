@@ -7,8 +7,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Multer } from 'multer';
 import { z } from 'zod';
-import { ingestDocument } from '../services/ingestService';
+import { IngestService } from '../services/ingestService';
 import { parseUploadedFile } from '../utils/fileParser';
 import logger from '../utils/logger';
 
@@ -24,6 +25,8 @@ const fileUploadSchema = z.object({
 
 @Controller('upload')
 export class UploadController {
+  constructor(private readonly ingestService: IngestService) {}
+
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async upload(
@@ -58,12 +61,14 @@ export class UploadController {
 
       const fileValidation = fileUploadSchema.safeParse(body);
       if (!fileValidation.success) {
+        //the server parses the uploaded file to get the document text, so the body only needs optional metadata
         throw new BadRequestException({
           error: 'Invalid file upload data',
           details: fileValidation.error.issues,
         });
       }
     } else {
+      //the client must provide text or content in the JSON body,
       const validation = uploadSchema.safeParse(body);
       if (!validation.success) {
         throw new BadRequestException({
@@ -79,7 +84,7 @@ export class UploadController {
       }
     }
 
-    const result = await ingestDocument(title, text);
+    const result = await this.ingestService.ingestDocument(title, text);
 
     logger.info('Upload successful', { id: result.indexed });
     return {
