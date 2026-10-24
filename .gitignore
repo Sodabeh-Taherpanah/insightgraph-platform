@@ -9,3 +9,13 @@ llm-service/venv/
 llm-service/__pycache__/
 
 .DS_Store
+# Generated graph data
+backend/data/
+
+# Python / local
+llm-service/.env
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.tsbuildinfo
