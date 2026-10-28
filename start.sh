@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Full Stack Startup Script
-# Starts Node.js backend + FastAPI LLM service
+# Starts Node.js backend + FastAPI LLM service + Next.js frontend
 
 set -e
 
@@ -36,6 +36,7 @@ cleanup() {
     echo "🛑 Shutting down services..."
     kill $LLM_PID 2>/dev/null || true
     kill $BACKEND_PID 2>/dev/null || true
+    kill $FRONTEND_PID 2>/dev/null || true
     exit 0
 }
 
@@ -44,7 +45,11 @@ trap cleanup SIGINT SIGTERM
 # Start FastAPI LLM Service
 echo -e "${BLUE}Starting FastAPI LLM Service (port 8000)...${NC}"
 cd llm-service
-python3 main.py &
+if [ -x venv/bin/python ]; then
+    venv/bin/python main.py &
+else
+    python3 main.py &
+fi
 LLM_PID=$!
 cd ..
 
@@ -69,9 +74,19 @@ BACKEND_PID=$!
 cd ..
 
 echo ""
+
+# Start Next.js Frontend
+echo -e "${BLUE}Starting Next.js Frontend (port 3000)...${NC}"
+cd frontend
+npm run dev &
+FRONTEND_PID=$!
+cd ..
+
+echo ""
 echo -e "${GREEN}✓ All services started!${NC}"
 echo ""
 echo "📊 Service URLs:"
+echo "   - Frontend:         http://localhost:3000"
 echo "   - Node.js Backend:  http://localhost:3001"
 echo "   - FastAPI LLM:      http://localhost:8000"
 echo "   - Health Check:     http://localhost:8000/health"
