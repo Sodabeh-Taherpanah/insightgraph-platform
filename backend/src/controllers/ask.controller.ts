@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { z } from 'zod';
 import type { Response } from 'express';
 import { AskService } from '../services/askService';
@@ -14,7 +14,7 @@ const askSchema = z.object({
 
 @Controller('ask')
 export class AskController {
-  constructor(@Inject(AskService) private readonly askService: AskService) {}
+  constructor(private readonly askService: AskService) {}
 
   @Post()
   async ask(@Body() body: unknown) {
@@ -34,24 +34,11 @@ export class AskController {
       res.setHeader('Connection', 'keep-alive');
       res.setHeader('Access-Control-Allow-Origin', '*');
 
-      const result = await this.askService.streamQuestion(
-        question,
-        (token) => {
-          res.write(
-            `data: ${JSON.stringify({ type: 'answer', content: token })}\n\n`,
-          );
-        },
-        // TEMP: latency measurement
-        (meta) => {
-          res.write(`data: ${JSON.stringify({ type: 'meta', ...meta })}\n\n`);
-        },
-        // TEMP: latency measurement
-        (stats) => {
-          res.write(
-            `data: ${JSON.stringify({ ...stats, type: 'stats' })}\n\n`,
-          );
-        },
-      );
+      const result = await this.askService.streamQuestion(question, (token) => {
+        res.write(
+          `data: ${JSON.stringify({ type: 'answer', content: token })}\n\n`,
+        );
+      });
 
       if (result.answer) {
         res.write(

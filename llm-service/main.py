@@ -58,19 +58,6 @@ Guidelines:
 - Reference specific facts from the context when relevant, but avoid long verbatim quotes.
 - Do not invent facts outside the provided context."""
 
-# TEMP: latency measurement
-def _stats_event(d: dict) -> str:
-    """Build one SSE event with Ollama's final-chunk stats (durations: ns -> ms)."""
-    ms = lambda k: round((d.get(k) or 0) / 1e6)
-    return "data: " + json.dumps({
-        "type": "stats",
-        "prompt_eval_count": d.get("prompt_eval_count"),
-        "prompt_eval_duration_ms": ms("prompt_eval_duration"),
-        "eval_count": d.get("eval_count"),
-        "eval_duration_ms": ms("eval_duration"),
-        "load_duration_ms": ms("load_duration"),
-    }) + "\n\n"
-
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
@@ -198,7 +185,6 @@ async def stream_question(request: AskRequest):
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": True,
-                "keep_alive": "30m",
                 "options": options,
             }
 
@@ -216,7 +202,6 @@ async def stream_question(request: AskRequest):
                             if token:
                                 yield f"data: {token}\n\n"
                             if data.get("done"):
-                                yield _stats_event(data)  # TEMP: latency measurement
                                 yield "data: [DONE]\n\n"
                                 return
                 except httpx.HTTPStatusError as e:
@@ -231,7 +216,6 @@ async def stream_question(request: AskRequest):
                                 if token:
                                     yield f"data: {token}\n\n"
                                 if data.get("done"):
-                                    yield _stats_event(data)  # TEMP: latency measurement
                                     yield "data: [DONE]\n\n"
                                     return
                     else:

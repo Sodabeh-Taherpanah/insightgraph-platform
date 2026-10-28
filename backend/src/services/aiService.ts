@@ -174,14 +174,10 @@ function fallbackAnswer(context: string, question: string): string {
  * Now calls FastAPI sidecar service for streaming.
  * Fallback -> stream fallback answer slowly if FastAPI service is not available.
  */
-// TEMP: latency measurement
-export type LlmStats = Record<string, unknown>;
-
 export async function answerQuestionStreaming(
   context: string,
   question: string,
   onToken: (token: string) => void,
-  onStats?: (stats: LlmStats) => void, // TEMP: latency measurement
 ): Promise<void> {
   const LLM_SERVICE_URL =
     process.env.LLM_SERVICE_URL || 'http://127.0.0.1:8000';
@@ -198,7 +194,7 @@ export async function answerQuestionStreaming(
       },
       {
         responseType: 'stream',
-        timeout: 180000, // cold model load on CPU can take a while before the first token
+        timeout: 30000,
       },
     );
 
@@ -218,7 +214,7 @@ export async function answerQuestionStreaming(
 
         // Process all complete events
         for (let i = 0; i < events.length - 1; i++) {
-          const event = events[i].replace(/^[\r\n]+/, ''); // only strip leading newlines; token spaces are kept
+          const event = events[i].trim();
           if (event && event.startsWith('data: ')) {
             const data = event.slice(6); // Don't trim - preserves spaces in tokens!
             console.log('FastAPI event:', { data: data.slice(0, 50) });
@@ -232,15 +228,6 @@ export async function answerQuestionStreaming(
               tokenCount++;
               onToken(data);
             } else {
-              // TEMP: latency measurement - hand the "stats" event to the caller
-              if (onStats && data.startsWith('{')) {
-                try {
-                  const parsed = JSON.parse(data);
-                  if (parsed?.type === 'stats') onStats(parsed);
-                } catch {
-                  // not JSON: ignore
-                }
-              }
               console.log('Skipping event (JSON or empty):', data.slice(0, 30));
             }
           }
