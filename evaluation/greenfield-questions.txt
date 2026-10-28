@@ -1,0 +1,18 @@
+Test questions for greenfield-handbook.md
+(expected answer in brackets, use it to judge the answers and later for hit@5 / MRR)
+
+1. How many days of paid annual leave does a full-time employee get?  [30 days]
+2. What is the allowed temperature range for transporting vaccines?  [2 to 8 degrees Celsius]
+3. How long is the probation period?  [6 months]
+4. What is the hotel limit per night in Germany?  [130 euros]
+5. How long do expense reports have to be submitted after a trip?  [within 30 days]
+6. Who is the data protection officer?  [Ingrid Falk]
+7. How many refrigerated trucks should be fully electric by the end of 2027?  [30 of 87]
+8. How much is the yearly learning budget per employee?  [1,200 euros and 5 paid learning days]
+9. What must a driver do if the temperature leaves the range for more than 15 minutes?  [call the control centre immediately; shipment marked "at risk"]
+10. What is the supplement for night shifts?  [18 percent, between 22:00 and 06:00]
+11. How many characters must a password have?  [at least 14]
+12. In which city was the company founded and by whom?  [Hamburg, Marlene Voss and Tobias Brandt]
+
+Trick question (the answer is NOT in the document, the system should say it does not know):
+13. What is the company's policy on pets in the office?
