@@ -3,6 +3,82 @@
 import { useState, useEffect } from 'react';
 import { API_BASE } from '../../lib/api';
 
+// TEMP: latency measurement
+type LatencyMetric = {
+  time: string;
+  question: string;
+  ttft_ms: number | null;
+  total_ms: number;
+  chunks: number;
+  chunks_per_s: number | null;
+  answer_chars: number;
+  retrieval_ms: number | null;
+  context_chunks: number | null;
+  context_chars: number | null;
+  answer: string;
+  prompt_eval_count: number | null;
+  prompt_eval_ms: number | null;
+  eval_count: number | null;
+  eval_ms: number | null;
+  load_ms: number | null;
+  context_hash: string | null;
+  context_chunk_ids: string | null; // ids joined with ';'
+  same_ctx_as_prev: boolean;
+};
+
+// TEMP: latency measurement
+declare global {
+  interface Window {
+    __metrics?: LatencyMetric[];
+    downloadMetrics?: () => void;
+    clearMetrics?: () => void;
+  }
+}
+
+// TEMP: latency measurement
+if (typeof window !== 'undefined') {
+  const csvCell = (v: unknown) => {
+    const s = v === null || v === undefined ? '' : String(v);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  window.downloadMetrics = () => {
+    const cols: (keyof LatencyMetric)[] = [
+      'time',
+      'question',
+      'ttft_ms',
+      'total_ms',
+      'chunks',
+      'chunks_per_s',
+      'answer_chars',
+      'retrieval_ms',
+      'context_chunks',
+      'context_chars',
+      'answer',
+      'prompt_eval_count',
+      'prompt_eval_ms',
+      'eval_count',
+      'eval_ms',
+      'load_ms',
+      'context_hash',
+      'context_chunk_ids',
+      'same_ctx_as_prev',
+    ];
+    const rows = (window.__metrics || []).map((m) =>
+      cols.map((c) => csvCell(m[c])).join(','),
+    );
+    const csv = [cols.join(','), ...rows].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'insightgraph-latency.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  window.clearMetrics = () => {
+    window.__metrics = [];
+  };
+}
+
 export default function AskPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [question, setQuestion] = useState('');
@@ -20,6 +96,26 @@ export default function AskPage() {
     setSources([]);
 
     try {
+      const t0 = performance.now(); // TEMP: latency measurement
+      let tFirst: number | null = null; // TEMP: latency measurement
+      let chunks = 0; // TEMP: latency measurement
+      let answerChars = 0; // TEMP: latency measurement
+      let answerText = ''; // TEMP: latency measurement
+      let meta: {
+        retrieval_ms?: number | null;
+        context_chunks?: number | null;
+        context_chars?: number | null;
+        context_hash?: string | null;
+        context_chunk_ids?: string[] | null;
+      } = {}; // TEMP: latency measurement
+      let stats: {
+        prompt_eval_count?: number | null;
+        prompt_eval_duration_ms?: number | null;
+        eval_count?: number | null;
+        eval_duration_ms?: number | null;
+        load_duration_ms?: number | null;
+      } = {}; // TEMP: latency measurement
+
       const response = await fetch(`${API_BASE}/ask/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,7 +162,15 @@ export default function AskPage() {
                 }
                 const data = JSON.parse(jsonStr);
                 if (data.type === 'answer') {
+                  if (tFirst === null) tFirst = performance.now(); // TEMP: latency measurement
+                  chunks++; // TEMP: latency measurement
+                  answerChars += String(data.content ?? '').length; // TEMP: latency measurement
+                  answerText += String(data.content ?? ''); // TEMP: latency measurement
                   setAnswer((prev) => prev + data.content);
+                } else if (data.type === 'meta') {
+                  meta = data; // TEMP: latency measurement
+                } else if (data.type === 'stats') {
+                  stats = data; // TEMP: latency measurement
                 } else if (data.type === 'sources') {
                   setSources(data.sources);
                 } else if (data.type === 'error') {
@@ -85,6 +189,38 @@ export default function AskPage() {
           }
         }
       }
+
+      // TEMP: latency measurement
+      const tEnd = performance.now();
+      const streamSecs = tFirst === null ? 0 : (tEnd - tFirst) / 1000;
+      const metric: LatencyMetric = {
+        time: new Date().toISOString(),
+        question,
+        ttft_ms: tFirst === null ? null : Math.round(tFirst - t0),
+        total_ms: Math.round(tEnd - t0),
+        chunks,
+        chunks_per_s:
+          streamSecs > 0 ? Number((chunks / streamSecs).toFixed(1)) : null,
+        answer_chars: answerChars,
+        retrieval_ms: meta.retrieval_ms ?? null,
+        context_chunks: meta.context_chunks ?? null,
+        context_chars: meta.context_chars ?? null,
+        answer: answerText,
+        prompt_eval_count: stats.prompt_eval_count ?? null,
+        prompt_eval_ms: stats.prompt_eval_duration_ms ?? null,
+        eval_count: stats.eval_count ?? null,
+        eval_ms: stats.eval_duration_ms ?? null,
+        load_ms: stats.load_duration_ms ?? null,
+        context_hash: meta.context_hash ?? null,
+        context_chunk_ids: meta.context_chunk_ids
+          ? meta.context_chunk_ids.join(';')
+          : null,
+        same_ctx_as_prev:
+          !!meta.context_hash &&
+          meta.context_hash === window.__metrics?.at(-1)?.context_hash,
+      };
+      console.table(metric);
+      (window.__metrics ||= []).push(metric);
 
       setSources((prevSources) => prevSources || []); // Ensure sources is initialized as an array
 
