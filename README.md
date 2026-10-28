@@ -34,7 +34,7 @@ Flow of a question:
 3. The backend sends the context and question to the llm-service, which calls Ollama.
 4. Tokens are relayed to the browser as Server-Sent Events, followed by the sources.
 
-The model receives the first three chunks of the ranking (`CONTEXT_CHUNKS`). The sources list is the top five search hits, so it can include chunks that were not sent to the model.
+The model receives the first three chunks of the ranking (`CONTEXT_CHUNKS`). The sources list shows exactly those chunks, in the order they appear in the prompt.
 
 Redis is optional. It caches search and context lookups for 60 seconds.
 
@@ -223,7 +223,6 @@ curl -X POST http://localhost:8000/llm/ask \
 - No authentication. All documents are visible to everyone.
 - Retrieval is keyword-based. It misses passages that share no words with the question. No embeddings, hybrid search or reranking.
 - The UI does not show when it is using a fallback (local file search, extractive answer).
-- Listed sources can include chunks that were not sent to the model.
 - Chunk overlap is about twice the intended 100 tokens. A `todo` test tracks this.
 - Test coverage is small. Upload, search, graph and the frontend are untested.
 - No evaluation of answer quality or retrieval, and no protection against prompt injection from document content.

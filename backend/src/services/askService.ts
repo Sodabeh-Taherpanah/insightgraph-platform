@@ -6,6 +6,7 @@ import {
   type LlmStats,
 } from './aiService';
 import {
+  CONTEXT_CHUNKS,
   contextChunkCounts,
   contextChunkIds,
   retrieveContext,
@@ -68,7 +69,7 @@ export class AskService {
 
     return {
       answer,
-      sources: this.mapSources(searchResults),
+      sources: this.mapSources(searchResults, question),
     };
   }
 
@@ -108,7 +109,7 @@ export class AskService {
     });
 
     return {
-      sources: this.mapSources(searchResults),
+      sources: this.mapSources(searchResults, question),
     };
   }
 
@@ -116,8 +117,23 @@ export class AskService {
     return (await searchDocuments(question)) as SearchResult[];
   }
 
-  private mapSources(searchResults: SearchResult[]): AskSource[] {
-    return searchResults.slice(0, 5).map((doc) => ({
+  // Sources are the chunks that were put in the prompt, in prompt order.
+  // retrieveContext records their ids per question; if that is unknown (for
+  // example a cached context after a restart), use the first CONTEXT_CHUNKS hits.
+  private mapSources(
+    searchResults: SearchResult[],
+    question: string,
+  ): AskSource[] {
+    const ids = contextChunkIds.get(question);
+    const fromContext = ids
+      ? ids
+          .map((id) => searchResults.find((r) => r.id === id))
+          .filter((r): r is SearchResult => !!r)
+      : [];
+    const used = fromContext.length
+      ? fromContext
+      : searchResults.slice(0, CONTEXT_CHUNKS);
+    return used.map((doc) => ({
       id: doc.id,
       title: doc.source.title,
       score: doc.score,

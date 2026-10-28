@@ -13,7 +13,7 @@ import {
 const ES_NODE = process.env.ES_NODE || 'http://localhost:9200';
 const INDEX = process.env.ES_INDEX || 'insightgraph';
 // TEMP: latency measurement
-const CONTEXT_CHUNKS = Number(process.env.CONTEXT_CHUNKS) || 3;
+export const CONTEXT_CHUNKS = Number(process.env.CONTEXT_CHUNKS) || 3;
 // TEMP: latency measurement ("score" = ES score order, default; "index" = by chunkIndex)
 const CONTEXT_ORDER = process.env.CONTEXT_ORDER === 'index' ? 'index' : 'score';
 // TEMP: latency measurement (chunk count per query; unknown on a Redis hit after restart)
