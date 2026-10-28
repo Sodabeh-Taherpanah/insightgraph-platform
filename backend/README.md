@@ -1,118 +1,76 @@
-# Backend Service (NestJS)
+# Backend (NestJS)
 
-This service handles orchestration, validation, Elasticsearch queries, retrieval, ingestion, graph access, business logic, and streaming responses.
+The API behind InsightGraph. It validates requests, ingests documents, retrieves context from Elasticsearch, calls the llm-service and streams answers to the frontend.
 
-## Architecture Role
+```
+Frontend -> Backend -> llm-service -> Ollama
+               |
+               +-> Elasticsearch (chunks, BM25 search)
+               +-> Redis (optional cache)
+               +-> backend/data/ (graph.json, documents.json fallback)
+```
 
-Frontend (Next.js) -> Backend (NestJS) -> FastAPI LLM Service -> Ollama
+## What it does
 
-Data and cache dependencies:
+- Parses `.txt`, `.md`, `.docx`, `.xlsx` and `.pdf` files, or takes plain text.
+- Splits text into chunks of about 512 tokens with overlap (`src/utils/chunking.ts`) and indexes each chunk in Elasticsearch.
+- Extracts subject-predicate-object triplets into `data/graph.json` (OpenAI if `OPENAI_API_KEY` is set, otherwise a heuristic).
+- Answers questions: BM25 search, then the llm-service, then sources.
+- Limits requests to 60 per minute per IP.
 
-- Elasticsearch: document/chunk indexing and retrieval (BM25 full-text search, no embeddings)
-- Redis (optional): short-lived caching for search/context; the backend works without it
-- Local graph persistence: graph data initialization and reads
+## Endpoints
 
-## Main Responsibilities
+Base URL: `http://localhost:3001`
 
-- Validate incoming API requests
-- Ingest files/text and index searchable chunks
-- Retrieve relevant context from Elasticsearch
-- Call LLM sidecar for answer generation/streaming
-- Return source attribution to the frontend
-- Apply global exception handling and rate limiting
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/upload` | Ingest JSON text (`title`, `text` or `content`, up to 10,000 characters) or a multipart `file` |
+| GET | `/search?q=` | Keyword search. Returns id, score, source and highlights per chunk. |
+| POST | `/ask` | Answer a question. Returns `{ answer, sources }`. |
+| POST | `/ask/stream` | Same answer as Server-Sent Events |
+| GET | `/documents/:id` | One indexed chunk |
+| POST | `/documents/:id/summary` | Summary of one chunk |
+| GET | `/documents/:id/summary/stream` | Streamed summary |
+| GET | `/graph` | Graph nodes and edges |
 
-## Tech Stack
+`/ask/stream` sends `data: {"type":"answer","content":"..."}` events, then `{"type":"sources","sources":[...]}`, then `data: [DONE]`. On failure it sends `{"type":"error","error":"..."}`. It also sends `meta` and `stats` events for latency measurement, which clients can ignore.
 
-- NestJS (Express platform), Throttling via @nestjs/throttler
-- TypeScript
-- Elasticsearch
-- Redis (ioredis)
-- Server-Sent Events (SSE) for streaming responses
+## Fallbacks
 
-## Backend Capabilities
+- Redis unreachable: no caching.
+- Elasticsearch unreachable: chunks are stored in and searched from `data/documents.json` by keyword counting. Elasticsearch is tried again after 30 seconds.
+- llm-service or Ollama unreachable: the answer is built from sentences in the context that match the question.
 
-- Build context from retrieved documents
-- Return source attribution to the frontend
-- Apply rate limiting (60 requests per minute per IP)
+## Run
 
-## API Endpoints.
-
-Base URL: http://localhost:3001
-
-1. POST /upload
-
-- Accepts text/content and optional file upload
-- Parses and split into chunk and writes into ingests documents Elasticsearch (searchable)
-
-2. GET /search?q=...
-
-- Returns search results for query text(Elasticsearch)
-
-3. POST /ask
-
-- Non-streaming answer generation
-- Returns answer + sources
-
-4. POST /ask/stream
-
-- Streaming answer generation (SSE)
-- Emits `data: {"type":"answer","content":"..."}` events, then `{"type":"sources","sources":[...]}`, then `data: [DONE]`
-- On failure an event `{"type":"error","error":"..."}` is sent
-
-5. GET /documents/:id
-
-- Fetch document by id
-
-6. POST /documents/:id/summary
-
-- Non-streaming summary request doc from Elasticsearch then request LLM side for summary generation
-
-7. GET /documents/:id/summary/stream
-
-- Streaming summary (SSE)
-
-8. GET /graph
-
-- Returns graph nodes and edges
-
-## Local Run
-
-1. Install dependencies
-
+```bash
 npm install
-
-2. Start backend in development
-
-npm run dev
-
-3. Build backend
-
+npm run dev        # http://localhost:3001
 npm run build
-
-4. Run production build output
-
-npm run start
-
-5. Lint, type-check and test
-
+npm run start      # runs dist/main.js
 npm run lint
 npm run typecheck
 npm test
+```
 
-## Required Environment
+From the repository root, `./start.sh` starts the backend together with the other services.
 
-Common environment variables:
+## Environment
 
-- PORT=3001
-- ES_NODE=http://localhost:9200
-- ES_INDEX=insightgraph
-- LLM_SERVICE_URL=http://127.0.0.1:8000
-- REDIS_URL=redis://localhost:6379 (optional; the backend runs without caching if Redis is unreachable)
-- OPENAI_API_KEY (optional; enables OpenAI triplet extraction and summaries, otherwise a heuristic fallback is used)
+The backend reads real environment variables and does not load `.env` files. Export them or set them on the command line. See `.env.example`.
 
-The backend reads real environment variables and does not load `.env` files; export them or use your shell's env loader. See `.env.example`.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `3001` | Port |
+| `ES_NODE` | `http://localhost:9200` | Elasticsearch URL |
+| `ES_INDEX` | `insightgraph` | Index name |
+| `LLM_SERVICE_URL` | `http://127.0.0.1:8000` | llm-service URL |
+| `REDIS_URL` | `redis://localhost:6379` | Optional cache |
+| `OPENAI_API_KEY` | empty | Optional. Triplet extraction and summaries. |
+| `CONTEXT_CHUNKS` | `3` | Chunks sent to the model. Experiment switch. |
+| `CONTEXT_ORDER` | `score` | `index` orders the context chunks by position in the document. Experiment switch. |
 
-## Related Docs
+## Related docs
 
-- Root overview: ../README.md
-- LLM sidecar: ../llm-service/README.md
+- [Root README](../README.md)
+- [llm-service](../llm-service/README.md)

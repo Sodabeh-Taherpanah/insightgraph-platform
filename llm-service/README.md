@@ -1,81 +1,14 @@
-# LLM Service (FastAPI Sidecar)
+# llm-service (FastAPI)
 
-FastAPI microservice handling all LLM operations for InsightGraph.
-FastAPI handles:
-
-- Ollama API calls
-- Prompt engineering
-- Token streaming
-
-## Architecture
+A small FastAPI service that sends a question and its context to Ollama and returns the answer, either at once or as a stream. The backend is its only client.
 
 ```
-┌──────────────┐         ┌────────────┐
-│    NestJS    │────────▶│  FastAPI   │
-│   Backend    │         │  LLM Svc   │
-└──────────────┘         └────────────┘
-  │                         │
-  ▼                         ▼
-┌──────────────┐         ┌────────────┐
-│Elasticsearch │         │  Ollama    │
-└──────────────┘         └────────────┘
+Backend -> llm-service :8000 -> Ollama :11434
 ```
 
 ## Endpoints
 
-### `POST /llm/ask`
-
-Standard completion - returns full answer at once.
-
-**Request:**
-
-```json
-{
-  "question": "What is the onboarding process for engineers at Company X?",
-  "context": "At Company X, engineering onboarding covers setting up your laptop, configuring development tools, getting access to internal repositories, completing security and compliance training, and meeting your onboarding mentor. All new engineers must finish these steps and submit their first pull request within two weeks.",
-  "max_tokens": 300,
-  "temperature": 0.2
-}
-```
-
-**Response:**
-
-```json
-{
-  "answer": "At Company X, engineering onboarding is completed over the first two weeks. A new engineer sets up their laptop and development tools, gets access to internal repositories, completes security and compliance training, works with an onboarding mentor, and is expected to submit a first pull request by the end of that period.",
-  "model": "llama3.1",
-  "tokens_used": 60
-}
-```
-
-### `POST /llm/stream`
-
-Same request body as `/llm/ask`, but returns the answer progressively as raw SSE token chunks.
-
-**Request:** Same as `/llm/ask`
-
-**Response:** Server-Sent Events stream
-
-```
-data: At Company X,
-data:  engineering onboarding is completed over the first two weeks.
-data:  A new engineer sets up their laptop and development tools,
-data:  gets access to internal repositories,
-data:  completes security and compliance training,
-data:  works with an onboarding mentor,
-data:  and is expected to submit a first pull request by the end of that period.
-...
-data: [DONE]
-```
-
-**Notes for consumers:**
-
-- Tokens keep their own whitespace. A token can be a single space (`data:  `), and most tokens start with a space. Do not trim events or tokens, or words and numbers will run together (`receives30 days`). Only strip the newlines that separate events.
-- On failure the stream sends one event of the form `data: {"error": "..."}`.
-
 ### `GET /health`
-
-Health check.
 
 ```json
 {
@@ -87,124 +20,92 @@ Health check.
 }
 ```
 
+### `POST /llm/ask`
+
+Returns the full answer at once.
+
+Request body:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `question` | string | Required, 1 to 500 characters |
+| `context` | string | Required. Text the answer must be based on. |
+| `max_tokens` | integer | Optional, 50 to 2000, default 500 |
+| `temperature` | number | Optional, 0 to 2, default 0.3 |
+
+Response:
+
+```json
+{ "answer": "...", "model": "llama3.1", "tokens_used": 60 }
+```
+
+### `POST /llm/stream`
+
+Same request body. The answer is returned as Server-Sent Events, one event per token, then a `stats` event, then `[DONE]`:
+
+```
+data: At Company X,
+
+data:  engineering onboarding is completed over the first two weeks.
+
+data: {"type":"stats","prompt_eval_count":...,"prompt_eval_duration_ms":...,"eval_count":...,"eval_duration_ms":...,"load_duration_ms":...}
+
+data: [DONE]
+```
+
+Notes for clients:
+
+- Tokens keep their own whitespace. A token can be a single space, and most tokens start with a space. Do not trim tokens, or words will run together. Only strip the newlines that separate events.
+- The `stats` event carries Ollama's timing for the request. It is used for latency measurement and is marked `// TEMP: latency measurement` in the code.
+- On failure the stream sends one event of the form `data: {"error": "..."}`.
+- The model is kept loaded in Ollama for 30 minutes (`keep_alive`).
+
+The system prompt tells the model to answer only from the context and to say when the context is not enough.
+
 ## Configuration
 
-Read from the environment (or `llm-service/.env`, see `.env.example`):
+The service reads environment variables, or `llm-service/.env` (see `.env.example`).
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
-| `OLLAMA_MODEL` | `llama3.1` | Model used for `/llm/ask` and `/llm/stream` |
+| `OLLAMA_MODEL` | `llama3.1` | Model used for both endpoints |
 | `PORT` | `8000` | Port when started with `python3 main.py` |
 
-## Setup
+The project was tested with `llama3.2:3b`. Set `OLLAMA_MODEL=llama3.2:3b` in `.env` to use it.
 
-### With Virtual Environment
+## Run
+
+Ollama must be running with the model pulled (`ollama pull llama3.2:3b`).
 
 ```bash
 cd llm-service
-
-# Create virtual environment - once
 python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate  # On macOS/Linux
-# OR
-venv\Scripts\activate  # On Windows
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Optionally edit OLLAMA_BASE_URL / OLLAMA_MODEL
-
-# Start Ollama (run in a separate terminal)
-
-ollama serve
+venv/bin/pip install -r requirements.txt
+cp .env.example .env     # then edit OLLAMA_MODEL
+venv/bin/python main.py  # http://localhost:8000
 ```
 
-# Check Ollama server
+From the repository root, `./start.sh` starts this service together with the backend and frontend.
+
+## Check it
 
 ```bash
-curl http://localhost:11434/api/tags
-```
-
-### If model not pulled yet:
-
-```bash
-ollama pull llama3.1
-
-```
-
-### Run locally
-
-```bash
-python3 main.py
-```
-
-### Or with uvicorn directly:
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-### To deactivate when done
-
-deactivate
-
-### Testing & Verification
-
-After completing the Setup steps and starting Ollama and the FastAPI service, run these verification checks.
-
-1. Verify Ollama is reachable:
-
-```bash
-curl http://localhost:11434/api/tags
-```
-
-2. If the model is missing, pull it:
-
-```bash
-ollama pull llama3.1
-```
-
-3. Check FastAPI health:
-
-```bash
+curl http://localhost:11434/api/tags      # Ollama is up and lists the model
 curl http://localhost:8000/health
-```
 
-4. Functional API checks (use these against a running FastAPI instance):
-
-- Non-streaming `/llm/ask`:
-
-```bash
 curl -X POST http://localhost:8000/llm/ask \
   -H "Content-Type: application/json" \
-  -d '{"question":"What is FastAPI?","context":"FastAPI is a modern web framework","max_tokens":100}'
-```
+  -d '{"question":"What is FastAPI?","context":"FastAPI is a web framework for building APIs with Python.","max_tokens":100}'
 
-- Streaming `/llm/stream` (SSE):
-
-```bash
 curl -N -X POST http://localhost:8000/llm/stream \
   -H "Content-Type: application/json" \
-  -d '{"question":"Explain microservices","context":"Microservices are an architectural style","max_tokens":80}'
+  -d '{"question":"What is a microservice?","context":"Microservices are an architectural style.","max_tokens":80}'
 ```
 
-5. Integration: run the NestJS backend and exercise `/ask` through the backend API to confirm end-to-end behavior.
+`test-llm-service.sh` runs a scripted version of these checks.
 
-## Integration with NestJS
+## Related docs
 
-```typescript
-// In backend aiService.ts
-const response = await axios.post('http://localhost:8000/llm/ask', {
-  question: question,
-  context: context,
-  max_tokens: 500,
-  temperature: 0.3,
-});
-
-const answer = response.data.answer;
-```
+- [Root README](../README.md)
+- [Backend](../backend/README.md)
