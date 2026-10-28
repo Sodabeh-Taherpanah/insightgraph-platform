@@ -9,8 +9,3 @@ export async function uploadText(title: string, text: string) {
   });
   return res.json();
 }
-
-export async function fetchGraph() {
-  const res = await fetch(`${API_BASE}/graph`);
-  return res.json();
-}

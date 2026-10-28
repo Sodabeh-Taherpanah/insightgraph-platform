@@ -10,7 +10,6 @@ Next.js (App Router) UI for InsightGraph: upload documents, ask questions with s
 | `/upload` | Upload text or a file (`.txt`, `.md`, `.docx`, `.xlsx`, `.pdf`) |
 | `/ask` | Ask a question; the answer is streamed over SSE from the backend, followed by its sources |
 | `/search` | Keyword search. Each hit is a card with the chunk text, BM25 score, document title and chunk number. It also shows "no results" and "backend unavailable" states. |
-| `/graph` | Knowledge graph view (React Flow). Experimental: the page exists but is not linked in the navigation |
 | `/documents/[id]` | One indexed chunk and its summary (opened from "View full chunk" on a search result) |
 
 The navigation is a single top bar (Upload, Ask, Search) that collapses into a hamburger menu below the `md` breakpoint (768 px).
