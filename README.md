@@ -233,7 +233,7 @@ fullstack_insightgraph_AI/
 │   └── .env.example
 ├── docker-compose.yml        # full stack with healthchecks
 ├── .github/workflows/ci.yml  # CI
-├── start.sh                  # starts llm-service and backend locally
+├── start.sh                  # starts llm-service, backend and frontend locally
 └── README.md
 ```
 
@@ -270,7 +270,6 @@ curl -X POST http://localhost:8000/llm/ask \
 - The knowledge graph is a JSON file with heuristic (or OpenAI) triplet extraction. It is not a graph database, and entity resolution is naive.
 - Summaries operate on a single chunk and fall back to a non-LLM heuristic without an OpenAI key.
 - The Docker setup has been validated with `docker compose config` only; a full run on a machine with a Docker daemon is still to be confirmed.
-- Several frontend components hardcode `http://localhost:3001` instead of using `NEXT_PUBLIC_API_URL`.
 - Uploaded text is limited by request size (5 MB JSON body) and there is no per-user storage or file persistence beyond the Elasticsearch index.
 
 ## Roadmap

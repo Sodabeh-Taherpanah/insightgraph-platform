@@ -68,6 +68,11 @@ data:  and is expected to submit a first pull request by the end of that period.
 data: [DONE]
 ```
 
+**Notes for consumers:**
+
+- Tokens keep their own whitespace. A token can be a single space (`data:  `), and most tokens start with a space. Do not trim events or tokens, or words and numbers will run together (`receives30 days`). Only strip the newlines that separate events.
+- On failure the stream sends one event of the form `data: {"error": "..."}`.
+
 ### `GET /health`
 
 Health check.
@@ -81,6 +86,16 @@ Health check.
   "ollama_reachable": true
 }
 ```
+
+## Configuration
+
+Read from the environment (or `llm-service/.env`, see `.env.example`):
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
+| `OLLAMA_MODEL` | `llama3.1` | Model used for `/llm/ask` and `/llm/stream` |
+| `PORT` | `8000` | Port when started with `python3 main.py` |
 
 ## Setup
 

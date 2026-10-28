@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend (Next.js)
 
-## Getting Started
+Next.js (App Router) UI for InsightGraph: upload documents, ask questions with streamed answers, search chunks and explore the knowledge graph.
 
-First, run the development server:
+## Pages
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page |
+| `/upload` | Upload text or a file (`.txt`, `.md`, `.docx`, `.xlsx`, `.pdf`) |
+| `/ask` | Ask a question; the answer is streamed over SSE from the backend, followed by its sources |
+| `/search` | Full-text search over indexed chunks |
+| `/graph` | Knowledge graph view (React Flow) |
+| `/documents/[id]` | A single indexed chunk and its summary |
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts: `npm run build`, `npm run start`, `npm run lint`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The backend base URL comes from `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`), read in `lib/api.ts`. Copy `.env.example` to `.env.local` to change it. The variable is inlined at build time, so restart `npm run dev` (or rebuild) after changing it.
 
-## Learn More
+## Streaming
 
-To learn more about Next.js, take a look at the following resources:
+`/ask` calls `POST {API_BASE}/ask/stream` and parses Server-Sent Events: `{"type":"answer","content":"..."}` chunks, a `{"type":"sources",...}` event and `[DONE]`. Event types it does not know are ignored.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Related docs
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Root overview: ../README.md
+- Backend API: ../backend/README.md
+- LLM sidecar: ../llm-service/README.md

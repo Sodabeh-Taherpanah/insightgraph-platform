@@ -1,6 +1,6 @@
 # Backend Service (NestJS)
 
-This service handles orchestration, authentication, validation, Elasticsearch queries, retrieval, ingestion, graph access, business logic, and streaming responses.
+This service handles orchestration, validation, Elasticsearch queries, retrieval, ingestion, graph access, business logic, and streaming responses.
 
 ## Architecture Role
 
@@ -33,7 +33,7 @@ Data and cache dependencies:
 
 - Build context from retrieved documents
 - Return source attribution to the frontend
-- Apply API auth and rate limiting
+- Apply rate limiting (60 requests per minute per IP)
 
 ## API Endpoints.
 
@@ -56,7 +56,8 @@ Base URL: http://localhost:3001
 4. POST /ask/stream
 
 - Streaming answer generation (SSE)
-- Emits tokens and final sources payload
+- Emits `data: {"type":"answer","content":"..."}` events, then `{"type":"sources","sources":[...]}`, then `data: [DONE]`
+- On failure an event `{"type":"error","error":"..."}` is sent
 
 5. GET /documents/:id
 
@@ -66,7 +67,7 @@ Base URL: http://localhost:3001
 
 - Non-streaming summary request doc from Elasticsearch then request LLM side for summary generation
 
-1. GET /documents/:id/summary/stream
+7. GET /documents/:id/summary/stream
 
 - Streaming summary (SSE)
 
@@ -92,6 +93,12 @@ npm run build
 
 npm run start
 
+5. Lint, type-check and test
+
+npm run lint
+npm run typecheck
+npm test
+
 ## Required Environment
 
 Common environment variables:
@@ -99,8 +106,11 @@ Common environment variables:
 - PORT=3001
 - ES_NODE=http://localhost:9200
 - ES_INDEX=insightgraph
-- LLM_SERVICE_URL=http://localhost:8000
-- REDIS_URL=redis://localhost:6379
+- LLM_SERVICE_URL=http://127.0.0.1:8000
+- REDIS_URL=redis://localhost:6379 (optional; the backend runs without caching if Redis is unreachable)
+- OPENAI_API_KEY (optional; enables OpenAI triplet extraction and summaries, otherwise a heuristic fallback is used)
+
+The backend reads real environment variables and does not load `.env` files; export them or use your shell's env loader. See `.env.example`.
 
 ## Related Docs
 
