@@ -8,7 +8,7 @@ Users upload documents, ask natural-language questions, and get answers generate
 
 - Token streaming over Server-Sent Events (`/ask/stream`) and a non-streaming endpoint (`/ask`)
 - Document chunking (512-token target, 100-token overlap; tokens are approximated as 1.3 per word)
-- Keyword retrieval with Elasticsearch full-text search (no vector embeddings yet)
+- Keyword retrieval with Elasticsearch full-text search (BM25 scoring; no vector embeddings, no Postgres)
 - Optional Redis cache for search and context lookups
 - Three services: NestJS (ingest, retrieval, orchestration), FastAPI (LLM calls), Next.js (UI)
 
@@ -28,8 +28,8 @@ _Screenshots coming soon._
 | Backend | NestJS 10 (Express adapter), TypeScript, Zod, Winston |
 | LLM service | FastAPI, httpx |
 | Model runtime | Ollama (default model `llama3.1`) |
-| Search | Elasticsearch 8.x (full-text `multi_match`) |
-| Cache (optional) | Redis via `ioredis`, fails open when unavailable |
+| Search | Elasticsearch 8.x (BM25 full-text `multi_match`) |
+| Cache (optional) | Redis via `ioredis`, fails open when unavailable; nothing breaks without it |
 | Graph storage | JSON file at `backend/data/graph.json` |
 
 ## Architecture
@@ -201,7 +201,7 @@ Each service has a `.env.example` listing every variable the code reads.
 
 **Chunking.** Whole documents are too large for the model context and dilute ranking. Chunks carry `sourceId`, `sourceTitle`, `chunkIndex`, `totalChunks`, `startPosition` and `endPosition`. Implementation: `backend/src/utils/chunking.ts`.
 
-**Full-text retrieval first.** Elasticsearch `multi_match` over `title^2` and `text` keeps retrieval simple and debuggable. It misses semantic matches that share no keywords with the question.
+**Full-text retrieval first.** Elasticsearch `multi_match` over `title^2` and `text` (BM25 scoring) keeps retrieval simple and debuggable. It misses semantic matches that share no keywords with the question.
 
 ## Project structure
 
@@ -259,6 +259,25 @@ curl -X POST http://localhost:8000/llm/ask \
 ```
 
 `llm-service/test-llm-service.sh` runs a scripted version of these checks.
+
+## Latency measurements
+
+On CPU-only Ollama, time to first token (TTFT) depends mostly on whether Ollama has already evaluated the same prompt prefix. The prompt is the system prompt, then the retrieved context, then the question, so the context is the shared prefix. With the chunks in Elasticsearch score order, the same chunks reached the model in many different orders, and every new order was a cold prompt. Ordering the selected chunks by their position in the document gives the same chunk set the same context string. Which chunks are selected does not change.
+
+| 13 questions | Score order | Document order |
+| --- | --- | --- |
+| Distinct prompt prefixes | 7 | 3 |
+| Slow requests (cold prompt) | 7 / 13 | 3 / 13 |
+| Total prompt reading | 128 s | 57 s |
+| Mean TTFT | 10.3 s | 4.6 s |
+
+Caveats:
+
+- One small document (4 chunks), so many questions share the same chunks. A larger corpus will have far more distinct chunk sets.
+- One run per setting, so run-to-run variation is not measured.
+- One laptop (Intel Mac, Ollama on CPU, `llama3.2:3b`). Cache behavior and timings will differ on other hardware and Ollama versions.
+- Answer quality was not scored. The experiment only shows prompt-prefix reuse, not that answers are as good or better.
+- The ordering switch used for this comparison is an experiment and is not part of the code in this repository.
 
 ## Known limitations
 

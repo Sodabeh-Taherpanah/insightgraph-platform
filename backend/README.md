@@ -8,8 +8,8 @@ Frontend (Next.js) -> Backend (NestJS) -> FastAPI LLM Service -> Ollama
 
 Data and cache dependencies:
 
-- Elasticsearch: document/chunk indexing and retrieval
-- Redis: short-lived caching for search/context
+- Elasticsearch: document/chunk indexing and retrieval (BM25 full-text search, no embeddings)
+- Redis (optional): short-lived caching for search/context; the backend works without it
 - Local graph persistence: graph data initialization and reads
 
 ## Main Responsibilities

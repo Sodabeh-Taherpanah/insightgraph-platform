@@ -105,24 +105,25 @@ export default function AskPage() {
           <p>Loading...</p>
         </div>
       ) : (
-        <div className='flex flex-col items-center p-4'>
+        <div className='mx-auto flex w-full max-w-3xl flex-col items-center'>
           <h1 className='text-2xl font-bold mb-4'>Ask a Question</h1>
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder='Type your question here...'
+            rows={4}
             className='w-full p-2 border rounded mb-4'
           />
           <button
             onClick={handleAsk}
             disabled={isLoading}
-            className='px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50'
+            className='w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50'
           >
             {isLoading ? 'Loading...' : 'Ask'}
           </button>
           <div className='mt-4 w-full'>
             <h2 className='text-xl font-semibold'>Answer:</h2>
-            <p className='whitespace-pre-wrap border p-2 rounded bg-gray-100'>
+            <p className='whitespace-pre-wrap break-words border p-2 rounded bg-gray-100'>
               {answer || 'Your answer will appear here.'}
             </p>
             {sources.length > 0 && (
@@ -130,7 +131,9 @@ export default function AskPage() {
                 <h3 className='text-lg font-semibold'>Sources:</h3>
                 <ul className='list-disc pl-5'>
                   {sources.map((source: { title: string }, index: number) => (
-                    <li key={index}>{source.title}</li>
+                    <li key={index} className='break-words'>
+                      {source.title}
+                    </li>
                   ))}
                 </ul>
               </div>

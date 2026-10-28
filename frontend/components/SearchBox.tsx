@@ -1,79 +1,120 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { API_BASE } from '../lib/api';
 
+interface SearchHit {
+  id: string;
+  score: number | null;
+  source: {
+    title: string;
+    text: string;
+    sourceTitle?: string;
+    chunkIndex?: number;
+    totalChunks?: number;
+  };
+}
+
+type Status = 'idle' | 'loading' | 'done' | 'unavailable';
+
 export default function SearchBox() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [searched, setSearched] = useState('');
+  const [results, setResults] = useState<SearchHit[]>([]);
+  const [status, setStatus] = useState<Status>('idle');
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(
-      `${API_BASE}/search?q=${encodeURIComponent(query)}`,
-    );
-    const data = await res.json();
-    setResults(data.results || []);
+    const q = query.trim();
+    if (!q) return;
+
+    setStatus('loading');
+    setSearched(q);
+    try {
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setResults(data.results || []);
+      setStatus('done');
+    } catch (error) {
+      console.error('Search failed:', error);
+      setResults([]);
+      setStatus('unavailable');
+    }
   };
 
   return (
-    <div className='p-4'>
-      <form onSubmit={handleSearch} className='flex gap-2 mb-4'>
+    <div>
+      <form onSubmit={handleSearch} className='flex gap-2 mb-6'>
         <input
           type='text'
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder='Search...'
-          className='border p-2 flex-1 rounded'
+          placeholder='Search your documents...'
+          className='border p-2 flex-1 min-w-0 rounded'
         />
         <button
           type='submit'
-          className='bg-blue-600 text-white px-4 py-2 rounded'
+          disabled={status === 'loading' || !query.trim()}
+          className='bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50'
         >
           Search
         </button>
       </form>
 
-      <ul className='space-y-2'>
-        {results.map((r, i) => (
-          <li
-            key={r.id || i}
-            className='border border-gray-200 p-4 rounded-lg hover:bg-gray-50'
-          >
-            <div className='flex justify-between items-start'>
-              <div className='flex-1'>
-                <h3 className='font-semibold text-lg text-blue-600'>
-                  {r.source?.title || r.title}
-                </h3>
-                <p className='text-sm text-gray-700 mt-1 line-clamp-3'>
-                  {r.source?.text || r.text}
-                </p>
-                <div className='flex items-center gap-4 mt-2 text-xs text-gray-500'>
-                  <span>Score: {(r.score || 0).toFixed(2)}</span>
-                  <span>ID: {r.id}</span>
-                  {r.source?.createdAt && (
-                    <span>
-                      Created:{' '}
-                      {new Date(r.source.createdAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() =>
-                  window.open(
-                    `/documents/${encodeURIComponent(r.id)}`,
-                    '_blank',
-                  )
-                }
-                className='ml-4 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600'
+      {status === 'loading' && <p className='text-gray-600'>Searching...</p>}
+
+      {status === 'unavailable' && (
+        <p
+          role='alert'
+          className='border border-red-200 bg-red-50 text-red-700 p-4 rounded-lg'
+        >
+          The backend is unavailable. Make sure it is running and try again.
+        </p>
+      )}
+
+      {status === 'done' && results.length === 0 && (
+        <p className='text-gray-600'>No results for “{searched}”.</p>
+      )}
+
+      {status === 'done' && results.length > 0 && (
+        <ul className='grid grid-cols-1 gap-4'>
+          {results.map((hit) => {
+            const { source } = hit;
+            const title = source.sourceTitle || source.title;
+            return (
+              <li
+                key={hit.id}
+                className='bg-white border border-gray-200 rounded-lg p-4 shadow-sm'
               >
-                View Full
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+                <div className='flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-2'>
+                  <h3 className='font-semibold text-blue-600 break-words'>
+                    {title}
+                  </h3>
+                  <span className='text-xs text-gray-500'>
+                    {typeof source.chunkIndex === 'number' &&
+                      `Chunk ${source.chunkIndex + 1}${
+                        source.totalChunks ? ` of ${source.totalChunks}` : ''
+                      } · `}
+                    Score {(hit.score ?? 0).toFixed(2)}
+                  </span>
+                </div>
+                <p className='text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-6'>
+                  {source.text}
+                </p>
+                <Link
+                  href={`/documents/${encodeURIComponent(hit.id)}`}
+                  className='inline-block mt-3 text-sm text-blue-600 hover:underline'
+                >
+                  View full chunk
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

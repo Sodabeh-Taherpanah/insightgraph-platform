@@ -6,12 +6,14 @@ Next.js (App Router) UI for InsightGraph: upload documents, ask questions with s
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Landing page |
+| `/` | Home: what the app does and links to Upload, Ask and Search |
 | `/upload` | Upload text or a file (`.txt`, `.md`, `.docx`, `.xlsx`, `.pdf`) |
 | `/ask` | Ask a question; the answer is streamed over SSE from the backend, followed by its sources |
-| `/search` | Full-text search over indexed chunks |
-| `/graph` | Knowledge graph view (React Flow) |
+| `/search` | Full-text search; each hit is a card with the chunk text, Elasticsearch score and document title / chunk index, with "no results" and "backend unavailable" states |
+| `/graph` | Knowledge graph view (React Flow). The page still exists but is not linked from the navigation |
 | `/documents/[id]` | A single indexed chunk and its summary |
+
+The navigation is a single top bar (Upload, Ask, Search) that collapses into a hamburger menu below the `md` breakpoint (768 px).
 
 ## Run locally
 

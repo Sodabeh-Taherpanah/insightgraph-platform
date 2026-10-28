@@ -53,8 +53,9 @@ export default function UploadForm() {
         <div className='flex items-center space-x-2'>
           <input
             type='file'
+            accept='.txt,.md,.pdf,.docx,.xlsx,text/plain,text/markdown'
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className='border p-2 rounded flex-1'
+            className='border p-2 rounded flex-1 min-w-0'
           />
           {file && (
             <button
