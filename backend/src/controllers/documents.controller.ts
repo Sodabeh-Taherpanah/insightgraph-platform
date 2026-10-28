@@ -1,14 +1,10 @@
 import { Controller, Get, Param, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { Client } from '@elastic/elasticsearch';
 import { z } from 'zod';
 import logger from '../utils/logger';
 import { summarizeText, summarizeTextStreaming } from '../services/aiService';
+import { getDocumentById } from '../services/searchService';
 import { NotFoundError, ValidationError, AppError } from '../utils/errors';
-
-const ES_NODE = process.env.ES_NODE || 'http://localhost:9200';
-const INDEX = process.env.ES_INDEX || 'insightgraph';
-const client = new Client({ node: ES_NODE });
 
 const documentIdSchema = z.string().min(1).max(200);
 
@@ -28,7 +24,7 @@ export class DocumentsController {
 
     try {
       logger.info('Retrieving document', { id });
-      const response = await client.get({ index: INDEX, id });
+      const response = await getDocumentById(id);
       const document = {
         id: response._id,
         ...(response._source as object),
@@ -58,7 +54,7 @@ export class DocumentsController {
 
     try {
       logger.info('Retrieving document for summary', { id });
-      const response = await client.get({ index: INDEX, id });
+      const response = await getDocumentById(id);
       const docText = (response._source as any)?.text as string;
       if (!docText) {
         throw new NotFoundError('Document text');
@@ -89,7 +85,7 @@ export class DocumentsController {
 
     try {
       logger.info('Retrieving document for streaming summary', { id });
-      const response = await client.get({ index: INDEX, id });
+      const response = await getDocumentById(id);
       const docText = (response._source as any)?.text as string;
       if (!docText) {
         res.status(404).json({ error: 'Document text not found' });

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Inject,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -24,7 +25,9 @@ const fileUploadSchema = z.object({
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly ingestService: IngestService) {}
+  constructor(
+    @Inject(IngestService) private readonly ingestService: IngestService,
+  ) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
