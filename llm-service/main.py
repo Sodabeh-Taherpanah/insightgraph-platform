@@ -61,7 +61,9 @@ Guidelines:
 # TEMP: latency measurement
 def _stats_event(d: dict) -> str:
     """Build one SSE event with Ollama's final-chunk stats (durations: ns -> ms)."""
-    ms = lambda k: round((d.get(k) or 0) / 1e6)
+    def ms(k):
+        return round((d.get(k) or 0) / 1e6)
+
     return "data: " + json.dumps({
         "type": "stats",
         "prompt_eval_count": d.get("prompt_eval_count"),
