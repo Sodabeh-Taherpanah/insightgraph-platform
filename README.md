@@ -183,6 +183,8 @@ Caveats:
 
 The code that supports this test (`CONTEXT_CHUNKS`, `CONTEXT_ORDER`, and the `meta` and `stats` events) is marked `// TEMP: latency measurement`.
 
+The test document, the questions and the raw results are in [`evaluation/`](evaluation/).
+
 ## Project structure
 
 ```
