@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import express from 'express';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { initializeGraph } from './services/graphService';
 import logger from './utils/logger';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
 
@@ -12,13 +11,6 @@ async function bootstrap() {
   app.enableCors();
   app.use(express.json({ limit: '5mb' }));
   app.useGlobalFilters(new AppExceptionFilter());
-
-  try {
-    await initializeGraph();
-  } catch (err) {
-    logger.error('Failed to initialize graph', { error: err });
-    process.exit(1);
-  }
 
   const port = Number(process.env.PORT || 3001);
   await app.listen(port);

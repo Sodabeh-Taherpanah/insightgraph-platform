@@ -5,7 +5,6 @@ import { AskController } from './controllers/ask.controller';
 import { UploadController } from './controllers/upload.controller';
 import { SearchController } from './controllers/search.controller';
 import { DocumentsController } from './controllers/documents.controller';
-import { GraphController } from './controllers/graph.controller';
 import { AskService } from './services/askService';
 import { IngestService } from './services/ingestService';
 
@@ -24,7 +23,6 @@ import { IngestService } from './services/ingestService';
     UploadController,
     SearchController,
     DocumentsController,
-    GraphController,
   ],
   providers: [
     AskService,

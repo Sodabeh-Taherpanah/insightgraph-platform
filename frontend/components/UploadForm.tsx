@@ -211,7 +211,7 @@ export default function UploadForm() {
                 </code>
               </p>
               <p className='text-sm text-gray-600 mb-2'>
-                Triplets extracted: {response.triplets?.length || 0}
+                Chunks created: {response.chunksCreated ?? 0}
               </p>
               <details className='mt-4'>
                 <summary className='cursor-pointer text-sm font-medium'>

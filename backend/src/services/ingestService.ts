@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { indexDocument } from './searchService';
-import { extractTripletsFromText } from './aiService';
 import { normalizeText } from '../utils/fileParser';
 import { chunkDocument } from '../utils/chunking';
-import { graph } from './graphService';
 import logger from '../utils/logger';
 
 export interface IngestResult {
   indexed: string;
   chunksCreated: number;
-  triplets: Array<{ subject: string; predicate: string; object: string }>;
-  graph: { nodes: any[]; edges: any[] };
 }
 
 @Injectable()
@@ -57,63 +53,9 @@ export class IngestService {
         chunksIndexed: indexedCount,
       });
 
-      const triplets = await extractTripletsFromText(text);
-      logger.info('Triplets extracted', { count: triplets.length });
-
-      const addedNodes: any[] = [];
-      const addedEdges: any[] = [];
-      const nodeMap = new Map<string, string>();
-
-      for (const { subject, predicate, object } of triplets) {
-        let subjectId = nodeMap.get(subject);
-        if (!subjectId) {
-          const subjectNode = await graph.addNode({
-            type: 'entity',
-            label: subject,
-            properties: { source: title },
-          });
-          subjectId = subjectNode.id;
-          nodeMap.set(subject, subjectId);
-          addedNodes.push({ id: subjectId, label: subject, type: 'entity' });
-        }
-
-        let objectId = nodeMap.get(object);
-        if (!objectId) {
-          const objectNode = await graph.addNode({
-            type: 'entity',
-            label: object,
-            properties: { source: title },
-          });
-          objectId = objectNode.id;
-          nodeMap.set(object, objectId);
-          addedNodes.push({ id: objectId, label: object, type: 'entity' });
-        }
-
-        const edge = await graph.addEdge({
-          fromNodeId: subjectId,
-          toNodeId: objectId,
-          type: 'relation',
-          properties: { relation: predicate, source: title },
-        });
-        addedEdges.push({
-          id: edge.id,
-          from: subjectId,
-          to: objectId,
-          relation: predicate,
-          source: title,
-        });
-      }
-
-      logger.info('Document ingestion completed', {
-        nodesAdded: addedNodes.length,
-        edgesAdded: addedEdges.length,
-      });
-
       return {
         indexed: title,
         chunksCreated: indexedCount,
-        triplets,
-        graph: { nodes: addedNodes, edges: addedEdges },
       };
     } catch (error) {
       logger.error('Document ingestion failed', { title, error });

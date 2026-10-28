@@ -1,6 +1,5 @@
 backend/dist/
 backend/node_modules/
-backend/data/graph.json
 
 frontend/.next/
 frontend/node_modules/
@@ -9,7 +8,7 @@ llm-service/venv/
 llm-service/__pycache__/
 
 .DS_Store
-# Generated graph data
+# Generated local data (documents.json fallback)
 backend/data/
 
 # Python / local
