@@ -1,7 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { API_BASE } from '../lib/api';
+
+type UploadedDoc = {
+  id: string;
+  title: string;
+  createdAt: string;
+  chunks: number;
+};
 
 export default function UploadForm() {
   const [title, setTitle] = useState('');
@@ -9,6 +16,51 @@ export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
+  const [history, setHistory] = useState<UploadedDoc[]>([]);
+  const [historyError, setHistoryError] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/documents`);
+      if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+      const data = await res.json();
+      setHistory(data.documents ?? []);
+      setHistoryError(false);
+    } catch {
+      setHistoryError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  const handleDelete = async (doc: UploadedDoc) => {
+    setDeletingId(doc.id);
+    setDeleteError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE}/documents/${encodeURIComponent(doc.id)}`,
+        { method: 'DELETE' },
+      );
+      if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+      setConfirmId(null);
+      await loadHistory();
+    } catch {
+      setDeleteError(`Could not delete “${doc.title}”. Try again.`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // The backend titles a file by its lowercase file name when no title is typed.
+  const nextTitle = (title.trim() || file?.name.toLowerCase() || '').trim();
+  const duplicate = nextTitle
+    ? history.find((d) => d.title.toLowerCase() === nextTitle.toLowerCase())
+    : undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +80,7 @@ export default function UploadForm() {
     const data = await res.json();
     setResponse(data);
     setLoading(false);
+    if (data.ok) loadHistory();
   };
 
   return (
@@ -67,6 +120,13 @@ export default function UploadForm() {
             </button>
           )}
         </div>
+        {duplicate && (
+          <p className='text-sm text-amber-700' role='status'>
+            A document named “{duplicate.title}” was already uploaded on{' '}
+            {new Date(duplicate.createdAt).toLocaleString()}. Uploading again
+            will replace its chunks.
+          </p>
+        )}
         <button
           type='submit'
           disabled={loading || (!text.trim() && !file)}
@@ -75,6 +135,67 @@ export default function UploadForm() {
           {loading ? 'Uploading...' : 'Upload'}
         </button>
       </form>
+
+      <section className='mt-8 max-w-xl mx-auto'>
+        <h3 className='text-lg font-semibold mb-2'>Uploaded documents</h3>
+        {historyError ? (
+          <p className='text-sm text-gray-600'>
+            Could not load the upload history. Make sure the backend is running.
+          </p>
+        ) : history.length === 0 ? (
+          <p className='text-sm text-gray-600'>No documents uploaded yet.</p>
+        ) : (
+          <ul className='divide-y border rounded'>
+            {history.map((doc) => (
+              <li
+                key={doc.id}
+                className='flex items-start justify-between gap-2 p-2 text-sm'
+              >
+                <div className='min-w-0'>
+                  <p className='font-medium break-words'>{doc.title}</p>
+                  <p className='text-gray-600'>
+                    {doc.chunks} {doc.chunks === 1 ? 'chunk' : 'chunks'} ·{' '}
+                    {new Date(doc.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                {confirmId === doc.id ? (
+                  <div className='flex shrink-0 items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => handleDelete(doc)}
+                      disabled={deletingId === doc.id}
+                      className='text-red-600 hover:text-red-800 disabled:opacity-50'
+                    >
+                      {deletingId === doc.id ? 'Deleting...' : 'Confirm delete'}
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setConfirmId(null)}
+                      disabled={deletingId === doc.id}
+                      className='text-gray-600 hover:text-gray-800'
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type='button'
+                    onClick={() => setConfirmId(doc.id)}
+                    className='shrink-0 text-red-500 hover:text-red-700'
+                  >
+                    Delete
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {deleteError && (
+          <p className='mt-2 text-sm text-red-600' role='alert'>
+            {deleteError}
+          </p>
+        )}
+      </section>
 
       {response && (
         <div className='mt-6 bg-white border border-gray-200 rounded-lg p-4'>

@@ -1,15 +1,44 @@
-import { Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { z } from 'zod';
 import logger from '../utils/logger';
 import { summarizeText, summarizeTextStreaming } from '../services/aiService';
-import { getDocumentById } from '../services/searchService';
+import {
+  deleteUploadedDocument,
+  getDocumentById,
+  listUploadedDocuments,
+} from '../services/searchService';
 import { NotFoundError, ValidationError, AppError } from '../utils/errors';
 
 const documentIdSchema = z.string().min(1).max(200);
 
 @Controller('documents')
 export class DocumentsController {
+  @Get()
+  async listDocuments() {
+    return { documents: await listUploadedDocuments() };
+  }
+
+  // Deletes an uploaded document: all chunks whose sourceId equals the param.
+  @Delete(':sourceId')
+  async deleteDocument(@Param('sourceId') idParam: string) {
+    const idValidation = documentIdSchema.safeParse(idParam);
+    if (!idValidation.success) {
+      throw new ValidationError(
+        'Invalid document ID',
+        idValidation.error.issues,
+      );
+    }
+
+    const sourceId = idValidation.data;
+    logger.info('Deleting document', { sourceId });
+    const deleted = await deleteUploadedDocument(sourceId);
+    if (deleted === 0) {
+      throw new NotFoundError('Document');
+    }
+    return { ok: true, deleted };
+  }
+
   @Get(':id')
   async getDocument(@Param('id') idParam: string) {
     const idValidation = documentIdSchema.safeParse(idParam);

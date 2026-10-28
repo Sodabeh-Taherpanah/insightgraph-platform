@@ -158,6 +158,111 @@ export async function getDocumentById(id: string) {
   );
 }
 
+export interface UploadedDocument {
+  id: string;
+  title: string;
+  createdAt: string;
+  chunks: number;
+}
+
+/**
+ * List uploaded documents (one entry per sourceId), newest first.
+ * Uses Elasticsearch, or the local store if Elasticsearch is unreachable.
+ */
+export async function listUploadedDocuments(): Promise<UploadedDocument[]> {
+  return withFallback(
+    async () => {
+      await ensureIndex();
+      const resp = await client.search({
+        index: INDEX,
+        size: 0,
+        aggs: {
+          docs: {
+            terms: {
+              field: 'sourceId',
+              size: 200,
+              order: { latest: 'desc' },
+            },
+            aggs: {
+              latest: { max: { field: 'createdAt' } },
+              first: {
+                top_hits: {
+                  size: 1,
+                  _source: ['sourceTitle', 'createdAt', 'totalChunks'],
+                },
+              },
+            },
+          },
+        },
+      });
+      const buckets = ((resp.aggregations as any)?.docs?.buckets ??
+        []) as any[];
+      return buckets.map((b) => {
+        const src = b.first.hits.hits[0]?._source ?? {};
+        return {
+          id: String(b.key),
+          title: src.sourceTitle ?? String(b.key),
+          createdAt: src.createdAt ?? '',
+          chunks: src.totalChunks ?? b.doc_count,
+        };
+      });
+    },
+    () => {
+      const bySource = new Map<string, UploadedDocument>();
+      for (const d of loadLocal().values()) {
+        if (!d.sourceId) continue;
+        const prev = bySource.get(d.sourceId);
+        if (!prev || d.createdAt > prev.createdAt) {
+          bySource.set(d.sourceId, {
+            id: d.sourceId,
+            title: d.sourceTitle ?? d.sourceId,
+            createdAt: d.createdAt,
+            chunks: d.totalChunks ?? 1,
+          });
+        }
+      }
+      return [...bySource.values()].sort((a, b) =>
+        b.createdAt.localeCompare(a.createdAt),
+      );
+    },
+  );
+}
+
+/**
+ * Delete every chunk of an uploaded document (all chunks sharing a sourceId).
+ * Returns the number of chunks removed.
+ */
+export async function deleteUploadedDocument(sourceId: string) {
+  const deleted = await withFallback(
+    async () => {
+      await ensureIndex();
+      const resp = await client.deleteByQuery({
+        index: INDEX,
+        query: { term: { sourceId } },
+        refresh: true,
+      });
+      return resp.deleted ?? 0;
+    },
+    () => {
+      let count = 0;
+      for (const [id, d] of loadLocal()) {
+        if (d.sourceId === sourceId) {
+          loadLocal().delete(id);
+          count++;
+        }
+      }
+      if (count > 0) saveLocal();
+      return count;
+    },
+  );
+
+  // Drop cached search results and contexts that may contain the deleted chunks.
+  await invalidatePattern('search:*');
+  await invalidatePattern('context:*');
+
+  return deleted;
+}
+
 /**
  * Ensure index exists with enhanced mapping for chunked documents
  */
